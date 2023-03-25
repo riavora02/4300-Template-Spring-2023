@@ -1,0 +1,38 @@
+{% extends 'partials/base.html' %} {% block title %}Index{% endblock %} {% block
+content %}
+<h1 class="text-6xl mb-4">Hello there</h1>
+
+<p>This is a paragraph.</p>
+{% endblock %} {% block scripts %}
+<script>
+  function answerBoxTemplate(title, summary) {
+    return `<div class=''>
+              <h3>${title}</h3>
+              <p>${summary}</p>
+          </div>`;
+  }
+
+  function sendFocus() {
+    document.getElementById("filter-text-val").focus();
+  }
+
+  function filterText() {
+    document.getElementById("answer-box").innerHTML = "";
+    console.log(document.getElementById("filter-text-val").value);
+    fetch(
+      "/webtoons?" +
+        new URLSearchParams({
+          title: document.getElementById("filter-text-val").value,
+        }).toString()
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        data.forEach((row) => {
+          let tempDiv = document.createElement("div");
+          tempDiv.innerHTML = answerBoxTemplate(row.title, row.summary);
+          document.getElementById("answer-box").appendChild(tempDiv);
+        });
+      });
+  }
+</script>
+{% endblock %}

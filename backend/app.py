@@ -37,7 +37,7 @@ def sql_search():
 
 @app.route("/")
 def home():
-    return render_template('base.html',title="sample html")
+    return render_template('index.html')
 
 @app.route("/webtoons")
 def webtoon_search():
