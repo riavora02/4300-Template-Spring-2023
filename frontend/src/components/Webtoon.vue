@@ -7,7 +7,7 @@ defineProps<WebtoonProps>()
 
 <template>
     <div>
-        <h3>{{ title }}</h3>
+        <h3 class="font-bold text-lg">{{ title }}</h3>
         <p>{{ summary }}</p>
     </div>
 </template>

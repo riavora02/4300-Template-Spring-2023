@@ -20,10 +20,10 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div className="container mx-auto p-6">
-    <h1 className="text-3xl mb-3">Hello, world!</h1>
+  <div class="container mx-auto p-6">
+    <h1 class="text-3xl mb-3">Hello, world!</h1>
     <p>This is a paragraph.</p>
-    <Webtoon v-for="webtoon in webtoons" :id="webtoon.id" :title="webtoon.title" :summary="webtoon.summary" />
+    <Webtoon v-for="webtoon in webtoons" :id="webtoon.id" :title="webtoon.title" :summary="webtoon.summary" class="mb-6" />
   </div>
 </template>
 
