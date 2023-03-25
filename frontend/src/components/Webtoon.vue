@@ -1,9 +1,5 @@
 <script setup lang="ts">
-
-interface WebtoonProps {
-    title: string
-    summary: string
-}
+import { WebtoonProps } from '../types'
 
 defineProps<WebtoonProps>()
 
