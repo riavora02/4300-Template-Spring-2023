@@ -32,7 +32,6 @@ class MySQLDatabaseHandler(object):
                 conn.execute(i)
         else:
             conn.execute(query)
-        
 
     def query_selector(self,query):
         conn = self.lease_connection()
@@ -49,6 +48,8 @@ class MySQLDatabaseHandler(object):
         self.query_executor(sql_file_data)
         sql_file.close()
 
+
+# MODELS START HERE
 class Webtoon(db.Model):
     __tablename__ = "webtoons"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
