@@ -53,7 +53,8 @@
       )
         .then((response) => response.json())
         .then((data) => {
-          data.forEach((row) => {
+          let newData = data["webtoons"];
+          newData.forEach((row) => {
             let tempDiv = document.createElement("div");
             tempDiv.innerHTML = answerBoxTemplate(row.title, row.summary);
             document.getElementById("answer-box").appendChild(tempDiv);
