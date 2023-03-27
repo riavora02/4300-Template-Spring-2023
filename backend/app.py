@@ -17,7 +17,7 @@ os.environ['ROOT_PATH'] = os.path.abspath(os.path.join("..",os.curdir))
 MYSQL_USER = "root"
 MYSQL_USER_PASSWORD = ""
 MYSQL_PORT = 3306
-MYSQL_DATABASE = "webtoons"
+MYSQL_DATABASE = "kardashiandb"
 
 mysql_engine = MySQLDatabaseHandler(MYSQL_USER,MYSQL_USER_PASSWORD,MYSQL_PORT,MYSQL_DATABASE)
 
@@ -28,7 +28,7 @@ app = Flask(__name__)
 CORS(app)
 
 #SQLAlchemy setup stuff
-app.config["SQLALCHEMY_DATABASE_URI"] = 'mysql+pymysql://root:@localhost/webtoons'
+app.config["SQLALCHEMY_DATABASE_URI"] = f"mysql+pymysql://{mysql_engine.MYSQL_USER}:{mysql_engine.MYSQL_USER_PASSWORD}@{mysql_engine.MYSQL_HOST}:{mysql_engine.MYSQL_PORT}/{mysql_engine.MYSQL_DATABASE}"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SQLALCHEMY_ECHO"] = True
 
@@ -40,7 +40,7 @@ def success_response(data, code=200):
     return json.dumps(data), code
 
 def failure_response(error, code=404):
-    return json.dumps({"error": message}), code 
+    return json.dumps({"error": error}), code 
 
 # Sample search, the LIKE operator in this case is hard-coded, 
 # but if you decide to use SQLAlchemy ORM framework, 
@@ -59,7 +59,7 @@ def sqlalchemy_search():
 
 @app.route("/")
 def home():
-    return render_template('base.html',title="sample html")
+    return render_template('base.html', title="sample html")
 
 @app.route("/webtoons")
 def webtoon_search():
@@ -71,5 +71,5 @@ def webtoon_search():
 #     text = request.args.get("title")
 #     return sql_search(text)
 
-if __name__ == "__main__":
-    app.run(debug=True)
+# if __name__ == "__main__":
+#     app.run(debug=True)
