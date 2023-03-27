@@ -71,4 +71,5 @@ def webtoon_search():
 #     text = request.args.get("title")
 #     return sql_search(text)
 
-app.run(debug=True)
+if __name__ == "__main__":
+    app.run(debug=True)
