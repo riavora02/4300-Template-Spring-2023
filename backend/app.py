@@ -54,7 +54,15 @@ def failure_response(error, code=404):
 #     return json.dumps([dict(zip(keys,i)) for i in data])
 
 def sqlalchemy_search():
-    webtoons = [webtoon.simple_serialize() for webtoon in Webtoon.query.all()]
+    #webtoons = [webtoon.simple_serialize() for webtoon in Webtoon.query.all()]
+    query_input = request.args.get("q")
+    webtoons = Webtoon.query.all()
+    cosine_scores = {}
+    for w in Webtoon.query.all():
+        webtoon_data = w.simple_serialize()
+        cosine_scores[w] = get_cossim(query_input,w,webtoon_data["summary"])
+    out = sorted(cosine_scores.items(), key = lambda x: x[1], reverse = True)
+    webtoons = [webtoon.simple_serialize() for webtoon in out.keys()[:11]]
     return success_response({"webtoons": webtoons})
 
 @app.route("/")
