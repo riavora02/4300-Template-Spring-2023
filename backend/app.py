@@ -186,7 +186,6 @@ def get_cossim(data,query):
     return results
 
 def sqlalchemy_search():
-    summaries = [webtoon.simple_serialize()["summaries"] for webtoon in Webtoon.query.all()]
     webtoons = [webtoon.simple_serialize() for webtoon in Webtoon.query.all()]
     summary_to_webtoon = {}
     for i in webtoons:
