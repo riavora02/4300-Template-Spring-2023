@@ -197,8 +197,9 @@ def sqlalchemy_search():
     output = []
     results = get_cossim(webtoons,query_input)
     web_ind = make_index(webtoons)
-    for i in range(len(results),-1,-1):
-        output.append(web_ind[results[i][1]])
+    for i in range(len(results)):
+        print(results[i])
+        output.append(webtoons[results[i][1]])
     
     return success_response({"webtoons": output[:10]})
 
