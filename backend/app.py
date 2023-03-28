@@ -96,7 +96,7 @@ def make_index(data):
     return web_ind
     
 
-def compute_idf(inv_idx, n_docs, min_df=10, max_df_ratio=0.95):
+def compute_idf(inv_idx, n_docs, min_df=1, max_df_ratio=0.99):
     """ Compute term IDF values from the inverted index.
     Words that are too frequent or too infrequent get pruned.
     """
