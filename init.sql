@@ -26,7 +26,7 @@ CREATE TABLE `webtoons` (
   `original_work_by` varchar(255) DEFAULT NULL,
   `assisted_by` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1024 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=1024 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 
 --

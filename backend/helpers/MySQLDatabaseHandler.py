@@ -16,9 +16,9 @@ class MySQLDatabaseHandler(object):
 
     def validate_connection(self):
         engine = db.create_engine(f"mysql+pymysql://{self.MYSQL_USER}:{self.MYSQL_USER_PASSWORD}@{self.MYSQL_HOST}:{self.MYSQL_PORT}/{self.MYSQL_DATABASE}")
-        conn = engine.connect()
-        conn.execute(f"CREATE DATABASE IF NOT EXISTS {self.MYSQL_DATABASE}")
-        conn.execute(f"USE {self.MYSQL_DATABASE}")
+        # conn = engine.connect()
+        # conn.execute(f"CREATE DATABASE IF NOT EXISTS {self.MYSQL_DATABASE}")
+        # conn.execute(f"USE {self.MYSQL_DATABASE}")
         return engine
 
     def lease_connection(self):
