@@ -1,0 +1,113 @@
+{% extends 'partials/base.html' %} {% block title %}Index{% endblock %} {% block
+content %}
+
+<body>
+  <div class="flex flex-col space-y-12">
+    <div class="flex justify-center items-center space-x-4">
+      <img
+        src="{{url_for('static', filename='images/webtoon-logo.svg')}}"
+        width="100"
+      />
+      <h1
+        class="text-center text-6xl mb-0 font-semibold font-display text-slate-700"
+      >
+        Webtoon Finder
+      </h1>
+    </div>
+
+    <div class="md:mx-52">
+      <form class="flex items-center">
+        <label for="simple-search" class="sr-only">Search</label>
+        <div class="relative w-full">
+          <div
+            class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none"
+          >
+            <svg
+              aria-hidden="true"
+              class="w-5 h-5 text-gray-500 dark:text-gray-400"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                clip-rule="evenodd"
+              ></path>
+            </svg>
+          </div>
+          <input
+            type="text"
+            id="filter-text-val"
+            class="text-lg bg-gray-50 border border-gray-300 text-gray-900 rounded-full focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5"
+            placeholder="Search for a Webtoon..."
+            required
+          />
+        </div>
+        <button
+          type="submit"
+          onclick="filterText(event)"
+          class="p-2.5 ml-2 text-lg font-medium text-white bg-green-700 rounded-lg border border-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300"
+        >
+          <svg
+            class="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            ></path>
+          </svg>
+          <span class="sr-only">Search</span>
+        </button>
+      </form>
+    </div>
+
+    <div id="answer-box" class="mt-20 grid grid-cols-3 gap-8"></div>
+  </div>
+</body>
+
+{% endblock %} {% block scripts %}
+<script>
+  function answerBoxTemplate(title, summary) {
+    return `<div class='border border-gray-200 shadow-lg rounded-lg'>
+              <div class='w-full p-4 bg-green-200'>
+                <h3 class='text-xl font-semibold text-center'>${title}</h3>
+              </div>
+              <div class='p-6 text-slate-800'>
+                <p>${summary}</p>
+              </div>
+          </div>`;
+  }
+
+  function sendFocus() {
+    document.getElementById("filter-text-val").focus();
+  }
+
+  function filterText(e) {
+    e.preventDefault();
+    document.getElementById("answer-box").innerHTML = "";
+    console.log(document.getElementById("filter-text-val").value);
+    fetch(
+      "/webtoons?" +
+        new URLSearchParams({
+          q: document.getElementById("filter-text-val").value,
+        }).toString()
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        let newData = data["webtoons"];
+        newData.forEach((row) => {
+          let tempDiv = document.createElement("div");
+          tempDiv.innerHTML = answerBoxTemplate(row.title, row.summary);
+          document.getElementById("answer-box").appendChild(tempDiv);
+        });
+      });
+  }
+</script>
+{% endblock %}

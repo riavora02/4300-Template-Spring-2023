@@ -38,26 +38,19 @@ app.config["SQLALCHEMY_DATABASE_URI"] = f"mysql+pymysql://{mysql_engine.MYSQL_US
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SQLALCHEMY_ECHO"] = True
 
+
 db.init_app(app)
 with app.app_context():
     db.create_all()
 
+
 def success_response(data, code=200):
     return json.dumps(data), code
+
 
 def failure_response(error, code=404):
     return json.dumps({"error": error}), code 
 
-# Sample search, the LIKE operator in this case is hard-coded, 
-# but if you decide to use SQLAlchemy ORM framework, 
-# there's a much better and cleaner way to do this
-# TODO: use SQLAlchemy instead of these raw queries
-# def sql_search():
-#     query_sql = f"""SELECT * FROM webtoons limit 10"""
-#     keys = ["id", "webtoon_id", "title", "genre", "thumbnail", "summary"]
-#     data = mysql_engine.query_selector(query_sql)
-#     print(data)
-#     return json.dumps([dict(zip(keys,i)) for i in data])
 
 treebank_tokenizer = TreebankWordTokenizer()
 
@@ -88,12 +81,6 @@ def build_inverted_index(data):
         sorted_list = sorted(new, key=lambda x: x[0])
         inverted[term] = sorted_list
     return inverted
-
-def make_index(data):
-    web_ind = {}
-    for id,webtoon in enumerate(data):
-        web_ind[id]=webtoon
-    return web_ind
     
 
 def compute_idf(inv_idx, n_docs, min_df=1, max_df_ratio=0.99):
@@ -139,9 +126,7 @@ def accumulate_dot_scores(query_word_counts, index, idf):
                 qi = query_word_counts[term] * idf[term]
                 doc_scores[x] += qi * dij
 
-#     print(doc_scores[324])
     return doc_scores
-
 
 
 def index_search(query, index, idf, doc_norms, score_func=accumulate_dot_scores, tokenizer=treebank_tokenizer):
@@ -186,34 +171,31 @@ def get_cossim(data,query):
     results = index_search(query, inv_idx, idf, doc_norms)
     return results
 
-def sqlalchemy_search():
+
+def sqlalchemy_search(query_input):
     webtoons = [webtoon.simple_serialize() for webtoon in Webtoon.query.all()]
     summary_to_webtoon = {}
     for i in webtoons:
         if i["summary"] not in summary_to_webtoon:
             summary_to_webtoon[i["summary"]]=i["title"]
-    query_input = request.args.get("q")
     
     output = []
     results = get_cossim(webtoons,query_input)
-    web_ind = make_index(webtoons)
     for i in range(len(results)):
         output.append(webtoons[results[i][1]])
     return success_response({"webtoons": output[:10]})
 
+
 @app.route("/")
 def home():
-    return render_template('base.html', title="sample html")
+    return render_template('index.html')
+
 
 @app.route("/webtoons")
 def webtoon_search():
-    # text = request.args.get("title")
-    return sqlalchemy_search()
+    query_input = request.args.get("q")
+    return sqlalchemy_search(query_input)
 
-# @app.route("/episodes")
-# def episodes_search():
-#     text = request.args.get("title")
-#     return sql_search(text)
 
 # if __name__ == "__main__":
 #     app.run(debug=True)
