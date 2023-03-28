@@ -3,9 +3,17 @@ content %}
 
 <body>
   <div class="flex flex-col space-y-12">
-    <h1 class="text-center text-6xl mb-0 font-semibold font-display">
-      Webtoon Finder
-    </h1>
+    <div class="flex justify-center items-center space-x-4">
+      <img
+        src="{{url_for('static', filename='images/webtoon-logo.svg')}}"
+        width="100"
+      />
+      <h1
+        class="text-center text-6xl mb-0 font-semibold font-display text-slate-700"
+      >
+        Webtoon Finder
+      </h1>
+    </div>
 
     <div class="md:mx-52">
       <form class="flex items-center">
@@ -60,7 +68,7 @@ content %}
       </form>
     </div>
 
-    <div id="answer-box" class="mt-20 grid grid-cols-3 gap-5"></div>
+    <div id="answer-box" class="mt-20 grid grid-cols-3 gap-8"></div>
   </div>
 </body>
 
@@ -69,10 +77,10 @@ content %}
   function answerBoxTemplate(title, summary) {
     return `<div class='border border-gray-200 shadow-lg rounded-lg'>
               <div class='w-full p-4 bg-green-200'>
-              <h3 class='text-xl font-semibold text-center'>${title}</h3>
+                <h3 class='text-xl font-semibold text-center'>${title}</h3>
               </div>
-              <div class='p-6'>
-              <p>${summary}</p>
+              <div class='p-6 text-slate-800'>
+                <p>${summary}</p>
               </div>
           </div>`;
   }
