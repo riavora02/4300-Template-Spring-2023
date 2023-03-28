@@ -1,6 +1,10 @@
 import json
 import os
-from sklearn import TfidfVectorizer 
+import math
+import numpy as np
+from sklearn.feature_extraction.text import TfidfVectorizer 
+import nltk
+from nltk.tokenize import TreebankWordTokenizer
 from flask import Flask, render_template, request
 from flask_cors import CORS
 from helpers.MySQLDatabaseHandler import Webtoon, MySQLDatabaseHandler, db
@@ -19,7 +23,7 @@ MYSQL_USER = "root"
 MYSQL_USER_PASSWORD = ""
 MYSQL_PORT = 3306
 MYSQL_DATABASE = "kardashiandb"
-
+treebank_tokenizer = TreebankWordTokenizer()
 mysql_engine = MySQLDatabaseHandler(MYSQL_USER,MYSQL_USER_PASSWORD,MYSQL_PORT,MYSQL_DATABASE)
 
 # Path to init.sql file. This file can be replaced with your own file for testing on localhost, but do NOT move the init.sql file
@@ -82,14 +86,91 @@ and data is the data from kaggle"""
                              stop_words="english",
                              norm=norm
                              )
-    doc_by_vocab = vector.fit_transform([d['summary'] for d in data]).toarray()
+    doc_by_vocab = vector.fit_transform([d for d in data]).toarray()
     return doc_by_vocab
 
+def inverted_index(data):
+    inv_index = {}
+    for id,summary in enumerate(data):
+        tokens = list(nltk.word_tokenize(summary))
+        for word in set(tokens):
+            if word not in inv_index:
+                inv_index[word]=[(id,tokens.count(word))]
+            else:
+                inv_index[word].append((id,tokens.count(word)))
+    return inv_index
 
-def get_cossim(query, wt, data):
+def compute_idf(inv_idx, n_docs, min_df=10, max_df_ratio=0.95):
+    idf = {}
+    for word in inv_idx:
+        df = len(inv_idx[word])
+        if df<min_df or (df/n_docs)>max_df_ratio:
+            pass
+        else:
+            idf[word]=math.log(n_docs/(df+1),2)
+    return idf
+
+def compute_norm(index,idf,n_docs):
+    norms = np.zeros(n_docs)
+    sum = [0]*n_docs
+    for word in index:
+        df = len(index[word])
+        if word in idf:
+            for j in index[word]:
+                sum[j[0]]+=(j[1]*idf[word])**2
+    for i in range(n_docs):
+        norms[i]=math.sqrt(sum[i])
+    return norms
+
+def acc_dot_score(query_word_counts, index, idf):
+    doc_scores = {}
+    for word in query_word_counts:
+        if word in idf:
+            for i in index[word]:
+                if i[0] not in doc_scores:
+                    doc_scores[i[0]]=idf[word]*query_word_counts[word]*i[1]*idf[word]
+                else:
+                    doc_scores[i[0]]+=idf[word]*query_word_counts[word]*i[1]*idf[word]
+    return doc_scores
+
+def get_cossim(query, index, idf, doc_norms, wt, score_func=acc_dot_score, tokenizer=treebank_tokenizer):
+
+    inv_idx = inverted_index(data)
+    idf = compute_idf(inv_idx, len(data),min_df=10,max_df_ratio=0.1) 
+    inv_idx = {key: val for key, val in inv_idx.items() if key in idf}
+    doc_norms = compute_norm(inv_idx, idf, len(data)) 
+    
+    query = query.lower()
+    tokens = tokenizer.tokenize(query)
+    n_docs = len(doc_norms)
+    
+    query_dict = {}
+    
+    results = []
+    sum = 0
+    for word in tokens:
+        if word not in query_dict:
+            query_dict[word]=1
+        else:
+            query_dict[word]+=1
+    
+    for word in query_dict:
+        if word in idf:
+            sum+=(query_dict[word]*idf[word])**2
+        
+    query_norm = math.sqrt(sum)
+ 
+    doc_scores = score_func(query_dict,index,idf)
+    score = 0
+    for i in doc_scores:
+        score = doc_scores[i]/(query_norm*doc_norms[i])
+        results.append((score,i))
+    
+    #return sorted(results,key=lambda x:x[0],reverse=True)
+    
     matrix = webtoon_tfdi(data)
     webtoon_to_index = webtoon_name_array(data)
-    q = matrix[webtoon_to_index[wt1]]
+    q = webtoon_tfdi(q)
     wt_ind = matrix[webtoon_to_index[wt]]
     num = np.dot(wt1_ind, mov2_ind)
     den = np.dot(np.linalg.norm(wt1_ind), np.linalg.norm(mov2_ind))
