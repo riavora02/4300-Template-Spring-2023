@@ -199,7 +199,6 @@ def sqlalchemy_search():
     web_ind = make_index(webtoons)
     for i in range(len(results)):
         output.append(webtoons[results[i][1]])
-    print(results)
     return success_response({"webtoons": output[:10]})
 
 @app.route("/")
