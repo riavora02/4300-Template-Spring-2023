@@ -48,7 +48,7 @@
       fetch(
         "/webtoons?" +
           new URLSearchParams({
-            title: document.getElementById("filter-text-val").value,
+            q: document.getElementById("filter-text-val").value,
           }).toString()
       )
         .then((response) => response.json())
