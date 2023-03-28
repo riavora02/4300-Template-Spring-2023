@@ -61,6 +61,10 @@ def sqlalchemy_search():
 def home():
     return render_template('index.html')
 
+@app.route("/webtoon-advice")
+def webtoon():
+    return render_template('webtoon.html')
+
 @app.route("/webtoons")
 def webtoon_search():
     # text = request.args.get("title")
