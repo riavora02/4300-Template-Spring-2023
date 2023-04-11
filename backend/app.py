@@ -145,7 +145,6 @@ def index_search(query, index, idf, doc_norms, score_func=accumulate_dot_scores,
     acc = np.sqrt(acc)
 
     numerator_terms = score_func(query_number, index, idf)
-    print(numerator_terms)
     
     for x, y in numerator_terms.items():
         indx_search += [(y/(acc * doc_norms[x]), x)]
@@ -189,7 +188,7 @@ def home():
 @app.route("/webtoons")
 def webtoon_search():
     query_input = request.args.get("q")
-    bayes.preprocess()
+    bayes.preprocess(query_input)
     return sqlalchemy_search(query_input)
 
 

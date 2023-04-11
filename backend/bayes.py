@@ -7,7 +7,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 def tokenize(text):
     return [x for x in re.findall(r"[a-z]+", text.lower())]
 
-def preprocess(): 
+def preprocess(query): 
 
      webtoons = [webtoon.simple_serialize() for webtoon in Webtoon.query.all()]
 
@@ -63,12 +63,13 @@ def preprocess():
                label_word_prob[i][word_num] = sum / total_counts[word_num]
 
      # Now given a query we can iterate through all the genres and see which genre it is most likely to be present in
-     query = ["funny", "comedy"]
 
+     query = ["laugh"]
      total_prob_per_label = np.ones((len(genre_mappings)))
      for i in range(len(genre_mappings)):
           for word in query: 
                if word in features: 
+                    print("im in the feature")
                     index = features.index(word)
                     total_prob_per_label[i] *= label_word_prob[i][index]
           total_prob_per_label[i] *= genre_count[i]
@@ -80,7 +81,11 @@ def preprocess():
           if value == most_likely: 
                most_likely_genre = key
      
+     print(query)
      print(most_likely_genre)
+     print(total_prob_per_label)
+     print(genre_mappings)
+     print(genre_count)
      return(most_likely_genre)
      
 
