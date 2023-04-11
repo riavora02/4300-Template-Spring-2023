@@ -47,7 +47,7 @@ def preprocess():
 
 
      #First we implement Add-1 smoothing so that we don't get non-zero probabilities
-     vectors = vectors + 1
+     # vectors = vectors + 1
 
      total_counts = np.sum(vectors, axis = 0)
 
@@ -62,5 +62,26 @@ def preprocess():
                     sum += vectors[row][word_num] if webtoon_num_to_genre[row] == i else 0
                label_word_prob[i][word_num] = sum / total_counts[word_num]
 
-     #Now given a query we can iterate through all the genres and see which genre it is most likely to be present in
+     # Now given a query we can iterate through all the genres and see which genre it is most likely to be present in
+     query = ["funny", "comedy"]
+
+     total_prob_per_label = np.ones((len(genre_mappings)))
+     for i in range(len(genre_mappings)):
+          for word in query: 
+               if word in features: 
+                    index = features.index(word)
+                    total_prob_per_label[i] *= label_word_prob[i][index]
+          total_prob_per_label[i] *= genre_count[i]
+
+     most_likely = np.argmax(total_prob_per_label)
+     most_likely_genre = ""
      
+     for key, value in genre_mappings.items(): 
+          if value == most_likely: 
+               most_likely_genre = key
+     
+     print(most_likely_genre)
+     return(most_likely_genre)
+     
+
+
