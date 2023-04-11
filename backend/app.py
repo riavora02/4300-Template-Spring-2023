@@ -6,6 +6,7 @@ from nltk.tokenize import TreebankWordTokenizer
 from flask import Flask, render_template, request
 from flask_cors import CORS
 from helpers.MySQLDatabaseHandler import Webtoon, MySQLDatabaseHandler, db
+import bayes
 
 # ROOT_PATH for linking with all your files. 
 # Feel free to use a config.py or settings.py with a global export variable
@@ -188,6 +189,7 @@ def home():
 @app.route("/webtoons")
 def webtoon_search():
     query_input = request.args.get("q")
+    bayes.preprocess()
     return sqlalchemy_search(query_input)
 
 
