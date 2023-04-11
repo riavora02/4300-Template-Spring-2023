@@ -13,7 +13,6 @@ def preprocess():
 
      # the labels here are the genres
      # genre_mappings maps each genre to an index
-     # genre_count gives probability of webtoon in that genre P(label = y)
 
      genre_mappings = {}
      summary_lst = []
@@ -25,20 +24,19 @@ def preprocess():
           if webtoon['genre'] not in genre_mappings: 
                genre_mappings[webtoon['genre']] = len(genre_mappings)
 
-          webtoon_num_to_genre[count] = webtoon['genre']
+          webtoon_num_to_genre[count] = genre_mappings[webtoon['genre']]
           count += 1
 
           summary_lst.append(webtoon["summary"])
 
      vectorizer = CountVectorizer(max_df=0.7, min_df=1)
-     vectors = vectorizer.fit_transform(summary_lst).toarray()
-     features = vectorizer.get_feature_names()
-     
-     for line in vectors: 
-          print(sum(line))
-     print(features)
-     print(len(vectors))
 
+     #vectors is an array where the rows represent webtoon summaries and the columns are words in the corpus
+     #dimension of vectors is 734 x num features
+     vectors = np.array(vectorizer.fit_transform(summary_lst).toarray())
+     features = vectorizer.get_feature_names()
+
+     # genre_count gives probability of webtoon in that genre P(label = y)
      genre_count = np.zeros(len(genre_mappings))
      for webtoon in webtoons: 
           index = genre_mappings[webtoon['genre']]
@@ -46,3 +44,23 @@ def preprocess():
 
      for i in range(len(genre_count)): 
           genre_count[i] /= len(webtoons)
+
+
+     #First we implement Add-1 smoothing so that we don't get non-zero probabilities
+     vectors = vectors + 1
+
+     total_counts = np.sum(vectors, axis = 0)
+
+     # label_word_prob gives probability of word occuring given genre P(X | Y)
+     label_word_prob = np.zeros((len(genre_mappings), len(vectors[0])))
+
+     #Now we loop through each of the labels in the corpus and for each of the genres we find the label_word_prob
+     for i in range(len(genre_mappings)):
+          for word_num in range(len(vectors[0])):
+               sum = 0 
+               for row in range(len(vectors)):
+                    sum += vectors[row][word_num] if webtoon_num_to_genre[row] == i else 0
+               label_word_prob[i][word_num] = sum / total_counts[word_num]
+
+     #Now given a query we can iterate through all the genres and see which genre it is most likely to be present in
+     
