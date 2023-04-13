@@ -1,20 +1,5 @@
 version: '3.8'
 services:
-        frontend_app:
-                container_name: ${TEAM_NAME}_frontend_app
-                ports:
-                        - ${FRONTEND_EXTERNAL_PORT}:${FRONTEND_INTERNAL_PORT}
-                expose:
-                        - ${FRONTEND_EXTERNAL_PORT}
-                restart: always
-                build:
-                        context: ./frontend
-                        dockerfile: Dockerfile
-                networks:
-                        flask_network:
-                                aliases:
-                                        - flask-network
-                command: nginx -g 'daemon off;'
         backend_flask_app:
                 container_name: ${TEAM_NAME}_backend_flask_app
                 ports:
