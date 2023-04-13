@@ -3,7 +3,7 @@ services:
     frontend_app:
         container_name: ${TEAM_NAME}_frontend_app
         ports:
-                - 0.0.0.0:4548
+                - 0.0.0.0:4548:3000
         restart: always
         build:
                 context: ./frontend
