@@ -4,7 +4,7 @@ import Webtoon from './components/Webtoon.vue';
 import { WebtoonType } from './types';
 import { onMounted, ref } from 'vue';
 
-const BACKEND_URL = "http://127.0.0.1:8000"
+const BACKEND_URL = "http://4300showcase.infosci.cornell.edu:4539/"
 
 const webtoons = ref<WebtoonType[]>()
 
