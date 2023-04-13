@@ -4,4 +4,4 @@ WORKDIR /app
 
 FROM nginx:alpine
 COPY nginx.conf /etc/nginx/conf.d/default.conf
-ADD build /usr/share/nginx/htm
+ADD dist /usr/share/nginx/htm
