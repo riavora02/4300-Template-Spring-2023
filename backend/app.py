@@ -1,17 +1,11 @@
 import json
 import os
-import math
 import numpy as np
-from sklearn.feature_extraction.text import TfidfVectorizer 
-import nltk
 import re
 from nltk.tokenize import TreebankWordTokenizer
 from flask import Flask, render_template, request
 from flask_cors import CORS
 from helpers.MySQLDatabaseHandler import Webtoon, MySQLDatabaseHandler, db
-# from flask_sqlalchemy import SQLAlchemy
-
-# db = SQLAlchemy()
 
 # ROOT_PATH for linking with all your files. 
 # Feel free to use a config.py or settings.py with a global export variable
@@ -36,7 +30,7 @@ CORS(app)
 #SQLAlchemy setup stuff
 app.config["SQLALCHEMY_DATABASE_URI"] = f"mysql+pymysql://{mysql_engine.MYSQL_USER}:{mysql_engine.MYSQL_USER_PASSWORD}@{mysql_engine.MYSQL_HOST}:{mysql_engine.MYSQL_PORT}/{mysql_engine.MYSQL_DATABASE}"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-app.config["SQLALCHEMY_ECHO"] = True
+app.config["SQLALCHEMY_ECHO"] = False
 
 
 db.init_app(app)
