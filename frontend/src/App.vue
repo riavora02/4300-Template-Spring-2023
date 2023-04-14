@@ -22,10 +22,10 @@ const searchQuery = async () => {
 </script>
 
 <template>
-    <div class="container mx-auto px-6 py-20">
+    <div class="container mx-auto px-6 py-20 font-lato">
       <div class="flex flex-col space-y-12">
           <h1
-            class="text-center text-6xl mb-0 font-semibold font-display text-slate-700"
+            class="text-center text-6xl mb-0 font-semibold font-display text-slate-700 font-lexend"
           >
             Webtoon Finder
           </h1>
