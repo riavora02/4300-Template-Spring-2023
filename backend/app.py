@@ -187,7 +187,11 @@ def home():
 @app.route("/webtoons")
 def webtoon_search():
     query_input = request.args.get("q")
-    return sqlalchemy_search(query_input)
+    if query_input:
+        return sqlalchemy_search(query_input)
+    else:
+        return [webtoon.simple_serialize() for webtoon in Webtoon.query.all()]
+ 
 
 
 # if __name__ == "__main__":
