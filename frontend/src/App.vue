@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import axios from 'axios';
-import Webtoon from './components/Webtoon.vue';
-import { WebtoonType } from './types';
-import { ref } from 'vue';
+import axios from "axios"
+import Webtoon from "./components/Webtoon.vue"
+import { WebtoonType } from "./types"
+import { ref } from "vue"
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
 
@@ -10,25 +10,27 @@ const webtoons = ref<WebtoonType[]>([])
 const searchText = ref("")
 
 const searchQuery = async () => {
-  const request = `${BACKEND_URL}/webtoons?q=${searchText.value}` 
-  axios.get(request).then((res) => {
-    webtoons.value = res.data["webtoons"]
-    console.log(webtoons.value)
-  }).catch((err) => {
-    console.log(err)
-  }) 
+  const request = `${BACKEND_URL}/webtoons?q=${searchText.value}`
+  axios
+    .get(request)
+    .then((res) => {
+      webtoons.value = res.data["webtoons"]
+      console.log(webtoons.value)
+    })
+    .catch((err) => {
+      console.log(err)
+    })
 }
-
 </script>
 
 <template>
-    <div class="container mx-auto px-6 py-20 font-lato">
-      <div class="flex flex-col space-y-12">
-          <h1
-            class="text-center text-6xl mb-0 font-semibold font-display text-slate-700 font-lexend"
-          >
-            Webtoon Finder
-          </h1>
+  <div class="container mx-auto px-6 py-20 font-lato">
+    <div class="flex flex-col space-y-12">
+      <h1
+        class="text-center text-6xl mb-0 font-semibold font-display text-slate-700 font-lexend"
+      >
+        Webtoon Finder
+      </h1>
 
       <div class="md:mx-52">
         <form class="flex items-center" @submit.prevent="searchQuery">
@@ -54,7 +56,7 @@ const searchQuery = async () => {
             <input
               type="text"
               v-model="searchText"
-              class="text-lg bg-gray-50  border border-gray-300 text-gray-900 rounded-full focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5"
+              class="text-lg bg-gray-50 border border-gray-300 text-gray-900 rounded-full focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5"
               placeholder="Search for a Webtoon..."
               required
             />
@@ -81,14 +83,18 @@ const searchQuery = async () => {
           </button>
         </form>
       </div>
-      
-      <div class="mt-20 grid grid-cols-3 gap-8">
-        <Webtoon v-for="webtoon in webtoons" :id="webtoon.id" :title="webtoon.title" :summary="webtoon.summary" class="mb-6" />
-      </div>
 
+      <div class="mt-20 grid grid-cols-3 gap-8">
+        <Webtoon
+          v-for="webtoon in webtoons"
+          :id="webtoon.id"
+          :title="webtoon.title"
+          :summary="webtoon.summary"
+          class="mb-6"
+        />
+      </div>
     </div>
   </div>
 </template>
 
-<style scoped>
-</style>
+<style scoped></style>
