@@ -189,7 +189,10 @@ def home():
 def webtoon_search():
     query_input = request.args.get("q")
     bayes.preprocess(query_input)
-    return sqlalchemy_search(query_input)
+    if query_input:
+        return sqlalchemy_search(query_input)
+    else:
+        return [webtoon.simple_serialize() for webtoon in Webtoon.query.all()]
 
 
 # if __name__ == "__main__":
