@@ -178,7 +178,7 @@ def get_svd(query, data, limit=10, sim_threshold=0.35):
     svd_docs = svd.fit_transform(tfidf)
     query_tfidf = vectorizer.transform([query])
     query_vec = svd.transform(query_tfidf)
-    sims = get_cossim(data,query).flatten()
+    sims = cosine_similarity(query_vec, svd_docs).flatten()
     indices = np.argsort(sims)[::-1]
     if len(indices) > limit:
         indices = indices[:limit]
