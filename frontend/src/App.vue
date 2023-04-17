@@ -90,7 +90,10 @@ const searchQuery = async () => {
           :id="webtoon.id"
           :title="webtoon.title"
           :summary="webtoon.summary"
-          class="mb-6"
+          :webtoon_id="webtoon.id" 
+          :thumbnail="webtoon.thumbnail" 
+          :genre="webtoon.genre"
+          class="mb-6" 
         />
       </div>
     </div>
