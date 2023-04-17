@@ -6,7 +6,7 @@ from nltk.tokenize import TreebankWordTokenizer
 from flask import Flask, render_template, request
 from flask_cors import CORS
 from helpers.MySQLDatabaseHandler import Webtoon, MySQLDatabaseHandler, db
-import bayes
+from bayes import *
 
 # ROOT_PATH for linking with all your files. 
 # Feel free to use a config.py or settings.py with a global export variable
@@ -179,6 +179,19 @@ def sqlalchemy_search(query_input):
         output.append(webtoons[results[i][1]])
     return success_response({"webtoons": output[:10]})
 
+def custom_search(dataset, query_input):
+    serialized_dataset = [data.simple_serialize() for data in dataset]
+    summary_to_webtoon = {}
+    for i in serialized_dataset:
+        if i["summary"] not in summary_to_webtoon:
+            summary_to_webtoon[i["summary"]]=i["title"]
+    
+    output = []
+    results = get_cossim(serialized_dataset,query_input)
+    for i in range(len(results)):
+        output.append(serialized_dataset[results[i][1]])
+    return success_response({"webtoons": output[:10]})  
+
 
 @app.route("/")
 def home():
@@ -188,12 +201,13 @@ def home():
 @app.route("/webtoons")
 def webtoon_search():
     query_input = request.args.get("q")
-    bayes.preprocess(query_input)
+    likely_genre = preprocess(query_input)
     if query_input:
-        return sqlalchemy_search(query_input)
+        genre_filtered = Webtoon.query.filter_by(genre = likely_genre)
+        return custom_search(genre_filtered, query_input)
     else:
         return [webtoon.simple_serialize() for webtoon in Webtoon.query.all()]
 
 
-# if __name__ == "__main__":
-#     app.run(debug=True)
+if __name__ == "__main__":
+    app.run(debug=True)

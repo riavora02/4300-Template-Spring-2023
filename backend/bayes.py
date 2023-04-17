@@ -64,7 +64,7 @@ def preprocess(query):
 
      # Now given a query we can iterate through all the genres and see which genre it is most likely to be present in
 
-     query = ["laugh"]
+     # query = ["laugh"]
      total_prob_per_label = np.ones((len(genre_mappings)))
      for i in range(len(genre_mappings)):
           for word in query: 
