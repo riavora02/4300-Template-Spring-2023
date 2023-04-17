@@ -1,17 +1,15 @@
 import json
 import os
-import math
 import numpy as np
-from sklearn.feature_extraction.text import TfidfVectorizer 
-import nltk
 import re
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.decomposition import TruncatedSVD
 from nltk.tokenize import TreebankWordTokenizer
 from flask import Flask, render_template, request
 from flask_cors import CORS
 from helpers.MySQLDatabaseHandler import Webtoon, MySQLDatabaseHandler, db
-# from flask_sqlalchemy import SQLAlchemy
-
-# db = SQLAlchemy()
+import bayes
 
 # ROOT_PATH for linking with all your files. 
 # Feel free to use a config.py or settings.py with a global export variable
@@ -36,28 +34,21 @@ CORS(app)
 #SQLAlchemy setup stuff
 app.config["SQLALCHEMY_DATABASE_URI"] = f"mysql+pymysql://{mysql_engine.MYSQL_USER}:{mysql_engine.MYSQL_USER_PASSWORD}@{mysql_engine.MYSQL_HOST}:{mysql_engine.MYSQL_PORT}/{mysql_engine.MYSQL_DATABASE}"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-app.config["SQLALCHEMY_ECHO"] = True
+app.config["SQLALCHEMY_ECHO"] = False
+
 
 db.init_app(app)
 with app.app_context():
     db.create_all()
 
+
 def success_response(data, code=200):
     return json.dumps(data), code
+
 
 def failure_response(error, code=404):
     return json.dumps({"error": error}), code 
 
-# Sample search, the LIKE operator in this case is hard-coded, 
-# but if you decide to use SQLAlchemy ORM framework, 
-# there's a much better and cleaner way to do this
-# TODO: use SQLAlchemy instead of these raw queries
-# def sql_search():
-#     query_sql = f"""SELECT * FROM webtoons limit 10"""
-#     keys = ["id", "webtoon_id", "title", "genre", "thumbnail", "summary"]
-#     data = mysql_engine.query_selector(query_sql)
-#     print(data)
-#     return json.dumps([dict(zip(keys,i)) for i in data])
 
 treebank_tokenizer = TreebankWordTokenizer()
 
@@ -88,12 +79,6 @@ def build_inverted_index(data):
         sorted_list = sorted(new, key=lambda x: x[0])
         inverted[term] = sorted_list
     return inverted
-
-def make_index(data):
-    web_ind = {}
-    for id,webtoon in enumerate(data):
-        web_ind[id]=webtoon
-    return web_ind
     
 
 def compute_idf(inv_idx, n_docs, min_df=1, max_df_ratio=0.99):
@@ -139,9 +124,7 @@ def accumulate_dot_scores(query_word_counts, index, idf):
                 qi = query_word_counts[term] * idf[term]
                 doc_scores[x] += qi * dij
 
-#     print(doc_scores[324])
     return doc_scores
-
 
 
 def index_search(query, index, idf, doc_norms, score_func=accumulate_dot_scores, tokenizer=treebank_tokenizer):
@@ -165,7 +148,6 @@ def index_search(query, index, idf, doc_norms, score_func=accumulate_dot_scores,
     acc = np.sqrt(acc)
 
     numerator_terms = score_func(query_number, index, idf)
-    print(numerator_terms)
     
     for x, y in numerator_terms.items():
         indx_search += [(y/(acc * doc_norms[x]), x)]
@@ -186,34 +168,51 @@ def get_cossim(data,query):
     results = index_search(query, inv_idx, idf, doc_norms)
     return results
 
-def sqlalchemy_search():
+def get_svd(query, data, limit=10, sim_threshold=0.35):
+    vectorizer = TfidfVectorizer()
+    tfidf = vectorizer.fit_transform(data)
+    svd = TruncatedSVD(n_components=40)
+    svd_docs = svd.fit_transform(tfidf)
+    query_tfidf = vectorizer.transform([query])
+    query_vec = svd.transform(query_tfidf)
+    sims = cosine_similarity(query_vec, svd_docs).flatten()
+    indices = np.argsort(sims)[::-1]
+    if len(indices) > limit:
+        indices = indices[:limit]
+    indices = [idx for idx in indices if sims[idx] >= sim_threshold]
+    items_sorted_by_sim = [data[idx] for idx in indices]
+    items_sorted_by_rating = sorted(items_sorted_by_sim, key=lambda x: x[1], reverse=True)
+    return [item[0] for item in items_sorted_by_rating]
+
+def sqlalchemy_search(query_input):
     webtoons = [webtoon.simple_serialize() for webtoon in Webtoon.query.all()]
     summary_to_webtoon = {}
     for i in webtoons:
         if i["summary"] not in summary_to_webtoon:
-            summary_to_webtoon[i["summary"]]=i["title"]
-    query_input = request.args.get("q")
-    
+            summary_to_webtoon[i["summary"]]=i["title"]   
     output = []
-    results = get_cossim(webtoons,query_input)
-    web_ind = make_index(webtoons)
+    #results = get_cossim(webtoons,query_input)
+    results = get_svd(query_input,webtoons)
     for i in range(len(results)):
         output.append(webtoons[results[i][1]])
     return success_response({"webtoons": output[:10]})
 
+
+
 @app.route("/")
 def home():
-    return render_template('base.html', title="sample html")
+    return render_template('index.html')
+
 
 @app.route("/webtoons")
 def webtoon_search():
-    # text = request.args.get("title")
-    return sqlalchemy_search()
+    query_input = request.args.get("q")
+    bayes.preprocess(query_input)
+    if query_input:
+        return sqlalchemy_search(query_input)
+    else:
+        return [webtoon.simple_serialize() for webtoon in Webtoon.query.all()]
 
-# @app.route("/episodes")
-# def episodes_search():
-#     text = request.args.get("title")
-#     return sql_search(text)
 
 # if __name__ == "__main__":
 #     app.run(debug=True)
