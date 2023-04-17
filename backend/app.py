@@ -170,7 +170,10 @@ def get_cossim(data,query):
 
 def get_svd(query, data, limit=10, sim_threshold=0.35):
     vectorizer = TfidfVectorizer()
-    tfidf = vectorizer.fit_transform(data)
+    webtoon_summaries = []
+    for i in data:
+        webtoon_summaries.append(i["summary"])
+    tfidf = vectorizer.fit_transform(webtoon_summaries)
     svd = TruncatedSVD(n_components=40)
     svd_docs = svd.fit_transform(tfidf)
     query_tfidf = vectorizer.transform([query])
