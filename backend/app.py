@@ -179,17 +179,18 @@ def sqlalchemy_search(query_input):
         output.append(webtoons[results[i][1]])
     return success_response({"webtoons": output[:10]})
 
-def custom_search(dataset, query_input):
-    serialized_dataset = [data.simple_serialize() for data in dataset]
+def custom_search(query_input, likely_genre):
+    webtoons = [webtoon.simple_serialize() for webtoon in Webtoon.query.all()]
     summary_to_webtoon = {}
-    for i in serialized_dataset:
+    for i in webtoons:
         if i["summary"] not in summary_to_webtoon:
             summary_to_webtoon[i["summary"]]=i["title"]
     
     output = []
-    results = get_cossim(serialized_dataset,query_input)
+    results = get_cossim(webtoons,query_input)
     for i in range(len(results)):
-        output.append(serialized_dataset[results[i][1]])
+        output.append(webtoons[results[i][1]])
+    output = [w for w in output if w["genre"] == likely_genre]
     return success_response({"webtoons": output[:10]})  
 
 
@@ -203,8 +204,7 @@ def webtoon_search():
     query_input = request.args.get("q")
     likely_genre = preprocess(query_input)
     if query_input:
-        genre_filtered = Webtoon.query.filter_by(genre = likely_genre)
-        return custom_search(genre_filtered, query_input)
+        return custom_search(query_input, likely_genre)
     else:
         return [webtoon.simple_serialize() for webtoon in Webtoon.query.all()]
 
