@@ -209,7 +209,8 @@ def custom_search(query_input, likely_genre):
             summary_to_webtoon[i["summary"]]=i["title"]
     
     output = []
-    results = get_cossim(webtoons,query_input)
+    #results = get_cossim(webtoons,query_input)
+    results = get_svd(query_input,webtoons)
     for i in range(len(results)):
         output.append(webtoons[results[i][1]])
     output = [w for w in output if w["genre"] == likely_genre]
