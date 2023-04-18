@@ -195,7 +195,8 @@ def sqlalchemy_search(query_input):
             summary_to_webtoon[i["summary"]]=i["title"]
     
     output = []
-    results = get_cossim(webtoons,query_input)
+    #results = get_cossim(webtoons,query_input)
+    results = get_svd(query_input,webtoons)
     for i in range(len(results)):
         output.append(webtoons[results[i][1]])
     return success_response({"webtoons": output[:10]})
