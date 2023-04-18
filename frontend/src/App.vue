@@ -13,11 +13,13 @@ const loadingResults = ref(false)
 
 const searchQuery = async () => {
   const request = `${BACKEND_URL}/webtoons?q=${searchText.value}`
+  loadingResults.value = true
   axios
     .get(request)
     .then((res) => {
       webtoons.value = res.data["webtoons"]
       console.log(webtoons.value)
+      loadingResults.value = false
     })
     .catch((err) => {
       console.log(err)
