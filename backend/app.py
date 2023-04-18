@@ -165,6 +165,24 @@ def get_cossim(data,query):
     results = index_search(query, inv_idx, idf, doc_norms)
     return results
 
+def get_svd(query, data, limit=10, sim_threshold=0.35):
+    vectorizer = TfidfVectorizer()
+    webtoon_summaries = []
+    for i in data:
+        webtoon_summaries.append(i["summary"])
+    tfidf = vectorizer.fit_transform(webtoon_summaries)
+    svd = TruncatedSVD(n_components=40)
+    svd_docs = svd.fit_transform(tfidf)
+    query_tfidf = vectorizer.transform([query])
+    query_vec = svd.transform(query_tfidf)
+    sims = cosine_similarity(query_vec, svd_docs).flatten()
+    indices = np.argsort(sims)[::-1]
+    if len(indices) > limit:
+        indices = indices[:limit]
+    indices = [idx for idx in indices if sims[idx] >= sim_threshold]
+    items_sorted_by_sim = [data[idx] for idx in indices]
+    items_sorted_by_rating = sorted(items_sorted_by_sim, key=lambda x: x[1], reverse=True)
+    return [item[0] for item in items_sorted_by_rating]
 
 def sqlalchemy_search(query_input):
     webtoons = [webtoon.simple_serialize() for webtoon in Webtoon.query.all()]
