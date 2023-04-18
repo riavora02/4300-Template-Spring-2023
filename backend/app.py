@@ -2,11 +2,14 @@ import json
 import os
 import numpy as np
 import re
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.decomposition import TruncatedSVD
 from nltk.tokenize import TreebankWordTokenizer
 from flask import Flask, render_template, request
 from flask_cors import CORS
 from helpers.MySQLDatabaseHandler import Webtoon, MySQLDatabaseHandler, db
-import bayes
+from bayes import *
 
 # ROOT_PATH for linking with all your files. 
 # Feel free to use a config.py or settings.py with a global export variable
@@ -165,6 +168,23 @@ def get_cossim(data,query):
     results = index_search(query, inv_idx, idf, doc_norms)
     return results
 
+def get_svd(query, data, sim_threshold=0.35):
+    vec = TfidfVectorizer()
+    webtoon_summaries = []
+    for i in data:
+        webtoon_summaries.append(i["summary"])
+    tfidf = vec.fit_transform(webtoon_summaries)
+    
+    svd = TruncatedSVD(n_components=40)
+    docs = svd.fit_transform(tfidf)
+    query_tfidf = vec.transform([query])
+    query_vec = svd.transform(query_tfidf)
+    
+    sims = cosine_similarity(query_vec, docs).flatten()
+    indices = np.argsort(sims)[::-1]
+    indices = [idx for idx in indices if sims[idx] >= sim_threshold]
+    items = [data[idx] for idx in indices]
+    return items
 
 def sqlalchemy_search(query_input):
     webtoons = [webtoon.simple_serialize() for webtoon in Webtoon.query.all()]
@@ -174,10 +194,25 @@ def sqlalchemy_search(query_input):
             summary_to_webtoon[i["summary"]]=i["title"]
     
     output = []
-    results = get_cossim(webtoons,query_input)
+    #results = get_cossim(webtoons,query_input)
+    results = get_svd(query_input,webtoons)
     for i in range(len(results)):
         output.append(webtoons[results[i][1]])
     return success_response({"webtoons": output[:10]})
+
+def custom_search(query_input, likely_genre):
+    webtoons = [webtoon.simple_serialize() for webtoon in Webtoon.query.all()]
+    summary_to_webtoon = {}
+    for i in webtoons:
+        if i["summary"] not in summary_to_webtoon:
+            summary_to_webtoon[i["summary"]]=i["title"]
+    
+   
+    #results = get_cossim(webtoons,query_input)
+    results = get_svd(query_input,webtoons)
+    output = results
+    output = [w for w in output if w["genre"] == likely_genre]
+    return success_response({"webtoons": output[:10]})  
 
 
 @app.route("/")
@@ -188,12 +223,12 @@ def home():
 @app.route("/webtoons")
 def webtoon_search():
     query_input = request.args.get("q")
-    bayes.preprocess(query_input)
+    likely_genre = preprocess(query_input)
     if query_input:
-        return sqlalchemy_search(query_input)
+        return custom_search(query_input, likely_genre)
     else:
         return [webtoon.simple_serialize() for webtoon in Webtoon.query.all()]
 
 
-# if __name__ == "__main__":
-#     app.run(debug=True)
+if __name__ == "__main__":
+    app.run(debug=True)

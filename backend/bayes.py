@@ -64,28 +64,24 @@ def preprocess(query):
 
      # Now given a query we can iterate through all the genres and see which genre it is most likely to be present in
 
-     query = ["laugh"]
+     # query = ["laugh"]
+     query = query.split()
      total_prob_per_label = np.ones((len(genre_mappings)))
      for i in range(len(genre_mappings)):
           for word in query: 
                if word in features: 
-                    print("im in the feature")
                     index = features.index(word)
                     total_prob_per_label[i] *= label_word_prob[i][index]
           total_prob_per_label[i] *= genre_count[i]
 
      most_likely = np.argmax(total_prob_per_label)
      most_likely_genre = ""
-     
+
      for key, value in genre_mappings.items(): 
           if value == most_likely: 
                most_likely_genre = key
      
-     print(query)
      print(most_likely_genre)
-     print(total_prob_per_label)
-     print(genre_mappings)
-     print(genre_count)
      return(most_likely_genre)
      
 
