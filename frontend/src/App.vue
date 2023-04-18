@@ -3,21 +3,30 @@ import axios from "axios"
 import Webtoon from "./components/Webtoon.vue"
 import LoadingSpinner from "./components/LoadingSpinner.vue"
 import { WebtoonType } from "./types"
-import { ref } from "vue"
+import { onMounted, ref } from "vue"
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
 
 const webtoons = ref<WebtoonType[]>([])
+const genres = ref<string[]>([])
 const searchText = ref("")
+const genreFilter = ref("all")
 const loadingResults = ref(false)
 
+const additionalWebtoons = ref<WebtoonType[]>([])
+
 const searchQuery = async () => {
-  const request = `${BACKEND_URL}/webtoons?q=${searchText.value}`
+  const request = `${BACKEND_URL}/webtoons?q=${searchText.value}&genre=${genreFilter.value}`
   loadingResults.value = true
   axios
     .get(request)
     .then((res) => {
       webtoons.value = res.data["webtoons"]
+
+      if (res.data["all"]) {
+        additionalWebtoons.value = res.data["all"]
+        console.log(res.data)
+      }
       console.log(webtoons.value)
       loadingResults.value = false
     })
@@ -25,6 +34,16 @@ const searchQuery = async () => {
       console.log(err)
     })
 }
+
+onMounted(() => {
+  const request = `${BACKEND_URL}/genres`
+  axios.get(request).then((res) => {
+    genres.value = res.data["genres"]
+  }).catch((err) => {
+    console.log(err)
+  })
+})
+
 </script>
 
 <template>
@@ -65,6 +84,12 @@ const searchQuery = async () => {
               required
             />
           </div>
+          <div>
+            <select v-model="genreFilter" id="genre" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+              <option value="all" selected>All genres</option>
+              <option v-for="genre in genres" :value="genre">{{ genre }}</option>
+            </select>
+          </div>
           <button
             type="submit"
             class="p-2.5 ml-2 text-lg font-medium text-white bg-green-700 rounded-lg border border-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300"
@@ -88,18 +113,37 @@ const searchQuery = async () => {
         </form>
       </div>
 
-      <div class="mt-20 grid grid-cols-3 gap-8">
-        <Webtoon
-          v-for="webtoon in webtoons"
-          :id="webtoon.id"
-          :title="webtoon.title"
-          :summary="webtoon.summary"
-          :webtoon_id="webtoon.id" 
-          :thumbnail="webtoon.thumbnail" 
-          :genre="webtoon.genre"
-          v-if="!loadingResults"
-          class="mb-6" 
-        />
+      <div>
+        <div v-if="!loadingResults">
+          <h4 class="text-xl" v-if="webtoons.length > 0">Recommended Webtoons</h4>
+          <div class="mt-10 grid grid-cols-3 gap-8">
+            <Webtoon
+              v-for="webtoon in webtoons"
+              :id="webtoon.id"
+              :title="webtoon.title"
+              :summary="webtoon.summary"
+              :webtoon_id="webtoon.id" 
+              :thumbnail="webtoon.thumbnail" 
+              :genre="webtoon.genre"
+              class="mb-6" 
+            />
+          </div>
+          <div class="mt-20" v-if="additionalWebtoons.length > 0">
+            <h4 class="text-xl">Webtoons based on filter</h4>
+            <div class="mt-10 grid grid-cols-3 gap-8">
+              <Webtoon
+                v-for="webtoon in webtoons"
+                :id="webtoon.id"
+                :title="webtoon.title"
+                :summary="webtoon.summary"
+                :webtoon_id="webtoon.id" 
+                :thumbnail="webtoon.thumbnail" 
+                :genre="webtoon.genre"
+                class="mb-6" 
+              />
+            </div>
+          </div>
+        </div>
         <LoadingSpinner v-else/>
       </div>
     </div>

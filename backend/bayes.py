@@ -7,7 +7,8 @@ from sklearn.feature_extraction.text import CountVectorizer
 def tokenize(text):
     return [x for x in re.findall(r"[a-z]+", text.lower())]
 
-def preprocess(query): 
+
+def preprocess(query, n=3): 
 
      webtoons = [webtoon.simple_serialize() for webtoon in Webtoon.query.all()]
 
@@ -63,8 +64,6 @@ def preprocess(query):
                label_word_prob[i][word_num] = sum / total_counts[word_num]
 
      # Now given a query we can iterate through all the genres and see which genre it is most likely to be present in
-
-     # query = ["laugh"]
      query = query.split()
      total_prob_per_label = np.ones((len(genre_mappings)))
      for i in range(len(genre_mappings)):
@@ -74,15 +73,20 @@ def preprocess(query):
                     total_prob_per_label[i] *= label_word_prob[i][index]
           total_prob_per_label[i] *= genre_count[i]
 
-     most_likely = np.argmax(total_prob_per_label)
-     most_likely_genre = ""
-
-     for key, value in genre_mappings.items(): 
-          if value == most_likely: 
-               most_likely_genre = key
+     # most_likely = np.argmax(total_prob_per_label)
+     # most_likely_genre = ""
      
-     print(most_likely_genre)
-     return(most_likely_genre)
+     most_likely_n = np.argsort(total_prob_per_label)[::-1]
+     reverse_genre_mappings = {value: key for key, value in genre_mappings.items()}
      
+     top_genres = []
+     for idx in most_likely_n:
+          top_genres.append(reverse_genre_mappings[idx])
 
-
+     # for key, value in genre_mappings.items(): 
+     #      if value == most_likely: 
+     #           most_likely_genre = key
+     
+     # print(most_likely_genre)
+     return top_genres[:n]
+     
