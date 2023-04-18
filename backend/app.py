@@ -184,8 +184,10 @@ def get_svd(query, data, limit=10, sim_threshold=0.35):
         indices = indices[:limit]
     indices = [idx for idx in indices if sims[idx] >= sim_threshold]
     items_sorted_by_sim = [data[idx] for idx in indices]
-    items_sorted_by_rating = sorted(items_sorted_by_sim, key=lambda x: x[1], reverse=True)
-    return [item[0] for item in items_sorted_by_rating]
+    #print(items_sorted_by_sim)
+    #items_sorted_by_rating = sorted(items_sorted_by_sim, key=lambda x: x[1], reverse=True)
+    #return [item[""] for item in items_sorted_by_sim]
+    return items_sorted_by_sim
 
 def sqlalchemy_search(query_input):
     webtoons = [webtoon.simple_serialize() for webtoon in Webtoon.query.all()]
@@ -208,11 +210,12 @@ def custom_search(query_input, likely_genre):
         if i["summary"] not in summary_to_webtoon:
             summary_to_webtoon[i["summary"]]=i["title"]
     
-    output = []
+   
     #results = get_cossim(webtoons,query_input)
     results = get_svd(query_input,webtoons)
-    for i in range(len(results)):
-        output.append(webtoons[results[i][1]])
+    output = results
+    # for i in range(len(results)):
+    #     output.append(webtoons[results[i][1]])
     output = [w for w in output if w["genre"] == likely_genre]
     return success_response({"webtoons": output[:10]})  
 
