@@ -203,7 +203,7 @@ def get_svd(query, data, sim_threshold=0.35):
 #     return success_response({"webtoons": output[:10]})
 
 
-def get_svd_results(query_input, likely_genres):
+def get_svd_results(query_input):
     webtoons = [webtoon.simple_serialize() for webtoon in Webtoon.query.all()]
     summary_to_webtoon = {}
     for i in webtoons:
@@ -215,9 +215,9 @@ def get_svd_results(query_input, likely_genres):
 
 
 def custom_search(query_input, likely_genres):
-    output = get_svd_results(query_input, likely_genres)
+    output = get_svd_results(query_input)
     output = [w for w in output if w["genre"] in likely_genres]
-    return output[:15] 
+    return output
 
 
 @app.route("/")
@@ -230,14 +230,13 @@ def webtoon_search():
     query_input = request.args.get("q")
     user_genre = request.args.get("genre")
     likely_genres = preprocess(query_input)
-    if user_genre == "all":
-        if query_input:
-            return success_response({"all": get_svd_results(query_input, likely_genres), "webtoons": custom_search(query_input, likely_genres)})
-    elif user_genre not in likely_genres:
-        if query_input:
-            return success_response({"all": get_svd_results(query_input, [user_genre]), "webtoons": custom_search(query_input, likely_genres)})
-        
-    return success_response({"webtoons": [webtoon.simple_serialize() for webtoon in Webtoon.query.all()]})
+    if query_input:
+        if user_genre == "all":
+            return success_response({"all": get_svd_results(query_input), "webtoons": custom_search(query_input, likely_genres)})
+        else:
+            return success_response({"all": custom_search(query_input, [user_genre]), "webtoons": custom_search(query_input, likely_genres)})
+    else:
+        return success_response({"webtoons": [webtoon.simple_serialize() for webtoon in Webtoon.query.all()]})
     
     
 @app.route("/genres")

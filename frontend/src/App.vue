@@ -132,7 +132,7 @@ onMounted(() => {
             <h4 class="text-xl">Webtoons based on filter</h4>
             <div class="mt-10 grid grid-cols-3 gap-8">
               <Webtoon
-                v-for="webtoon in webtoons"
+                v-for="webtoon in additionalWebtoons"
                 :id="webtoon.id"
                 :title="webtoon.title"
                 :summary="webtoon.summary"
