@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import axios from "axios"
 import Webtoon from "./components/Webtoon.vue"
+import LoadingSpinner from "./components/LoadingSpinner.vue"
 import { WebtoonType } from "./types"
 import { ref } from "vue"
 
@@ -8,6 +9,7 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
 
 const webtoons = ref<WebtoonType[]>([])
 const searchText = ref("")
+const loadingResults = ref(false)
 
 const searchQuery = async () => {
   const request = `${BACKEND_URL}/webtoons?q=${searchText.value}`
@@ -93,8 +95,10 @@ const searchQuery = async () => {
           :webtoon_id="webtoon.id" 
           :thumbnail="webtoon.thumbnail" 
           :genre="webtoon.genre"
+          v-if="!loadingResults"
           class="mb-6" 
         />
+        <LoadingSpinner v-else/>
       </div>
     </div>
   </div>
