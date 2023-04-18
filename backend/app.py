@@ -6,15 +6,11 @@ from nltk.tokenize import TreebankWordTokenizer
 from flask import Flask, render_template, request
 from flask_cors import CORS
 from helpers.MySQLDatabaseHandler import Webtoon, MySQLDatabaseHandler, db
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.decomposition import TruncatedSVD
-
-
 import bayes
 
-# ROOT_PATH for linking with all your files.
+# ROOT_PATH for linking with all your files. 
 # Feel free to use a config.py or settings.py with a global export variable
-os.environ['ROOT_PATH'] = os.path.abspath(os.path.join("..", os.curdir))
+os.environ['ROOT_PATH'] = os.path.abspath(os.path.join("..",os.curdir))
 
 # These are the DB credentials for your OWN MySQL
 # Don't worry about the deployment credentials, those are fixed
@@ -24,8 +20,7 @@ MYSQL_USER_PASSWORD = ""
 MYSQL_PORT = 3306
 MYSQL_DATABASE = "kardashiandb"
 treebank_tokenizer = TreebankWordTokenizer()
-mysql_engine = MySQLDatabaseHandler(
-    MYSQL_USER, MYSQL_USER_PASSWORD, MYSQL_PORT, MYSQL_DATABASE)
+mysql_engine = MySQLDatabaseHandler(MYSQL_USER,MYSQL_USER_PASSWORD,MYSQL_PORT,MYSQL_DATABASE)
 
 # Path to init.sql file. This file can be replaced with your own file for testing on localhost, but do NOT move the init.sql file
 mysql_engine.load_file_into_db()
@@ -33,7 +28,7 @@ mysql_engine.load_file_into_db()
 app = Flask(__name__)
 CORS(app)
 
-# SQLAlchemy setup stuff
+#SQLAlchemy setup stuff
 app.config["SQLALCHEMY_DATABASE_URI"] = f"mysql+pymysql://{mysql_engine.MYSQL_USER}:{mysql_engine.MYSQL_USER_PASSWORD}@{mysql_engine.MYSQL_HOST}:{mysql_engine.MYSQL_PORT}/{mysql_engine.MYSQL_DATABASE}"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SQLALCHEMY_ECHO"] = False
@@ -49,7 +44,7 @@ def success_response(data, code=200):
 
 
 def failure_response(error, code=404):
-    return json.dumps({"error": error}), code
+    return json.dumps({"error": error}), code 
 
 
 treebank_tokenizer = TreebankWordTokenizer()
@@ -81,7 +76,7 @@ def build_inverted_index(data):
         sorted_list = sorted(new, key=lambda x: x[0])
         inverted[term] = sorted_list
     return inverted
-
+    
 
 def compute_idf(inv_idx, n_docs, min_df=1, max_df_ratio=0.99):
     """ Compute term IDF values from the inverted index.
@@ -131,7 +126,7 @@ def accumulate_dot_scores(query_word_counts, index, idf):
 
 def index_search(query, index, idf, doc_norms, score_func=accumulate_dot_scores, tokenizer=treebank_tokenizer):
     """ Search the collection of documents for the given query"""
-
+    
     indx_search = []
     query = query.lower()
     tokens = tokenizer.tokenize(query)
@@ -150,43 +145,25 @@ def index_search(query, index, idf, doc_norms, score_func=accumulate_dot_scores,
     acc = np.sqrt(acc)
 
     numerator_terms = score_func(query_number, index, idf)
-
+    
     for x, y in numerator_terms.items():
         indx_search += [(y/(acc * doc_norms[x]), x)]
     indx_search.sort(reverse=True)
     return indx_search
 
 
-def get_cossim(data, query):
+def get_cossim(data,query):
     inv_idx = build_inverted_index(data)
     idf = compute_idf(inv_idx, len(data),
-                      min_df=10,
-                      max_df_ratio=0.1)  # documents are very short so we can use a small value here
+                    min_df=10,
+                    max_df_ratio=0.1)  # documents are very short so we can use a small value here
     # examine the actual DF values of common words like "the"
     # to set these values
     inv_idx = {key: val for key, val in inv_idx.items()
-               if key in idf}            # prune the terms left out by idf
+            if key in idf}            # prune the terms left out by idf
     doc_norms = compute_doc_norms(inv_idx, idf, len(data))
     results = index_search(query, inv_idx, idf, doc_norms)
     return results
-
-def webtoon_tfdi(data):
-    """word_count is the total number of unique words in the summaries,
-and data is the data from kaggle"""
-    word_count = set()
-    for webtoon in data:
-        summary = webtoon["summary"]
-        tokened = set(summary.split())
-        unique = unique.union(tokened)
-    vector = TfidfVectorizer(max_features=len(word_count),
-                             max_df=0.8,
-                             min_df=10,
-                             stop_words="english",
-                             norm='l2'
-                             )
-    doc_by_vocab = vector.fit_transform([d['summary'] for d in data]).toarray()
-    return vector
-
 
 
 def sqlalchemy_search(query_input):
@@ -194,20 +171,10 @@ def sqlalchemy_search(query_input):
     summary_to_webtoon = {}
     for i in webtoons:
         if i["summary"] not in summary_to_webtoon:
-            summary_to_webtoon[i["summary"]] = i["title"]
+            summary_to_webtoon[i["summary"]]=i["title"]
+    
     output = []
-
-    #SVD stuff
-    tfidf_webtoons = webtoon_tfdi(webtoons)
-    svd = TruncatedSVD(n_components=40)
-    svd_webtoons = svd.fit_transform(tfidf_webtoons)
-    vectorizer = TfidfVectorizer()
-    query_tfidf = vectorizer.transform([query_input])
-    svd_query = svd.transform(query_tfidf)
-
-    ##
-
-    results = get_cossim(svd_webtoons, svd_query)
+    results = get_cossim(webtoons,query_input)
     for i in range(len(results)):
         output.append(webtoons[results[i][1]])
     return success_response({"webtoons": output[:10]})
