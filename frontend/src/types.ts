@@ -11,3 +11,8 @@ export interface WebtoonType {
   thumbnail: string
   webtoon_id: number
 }
+
+export interface WebtoonListProps {
+  title: string
+  webtoons: WebtoonType[]
+}
