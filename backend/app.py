@@ -185,6 +185,9 @@ def get_svd(query, data, sim_threshold=0.35):
     indices = np.argsort(sims)[::-1]
     indices = [idx for idx in indices if sims[idx] >= sim_threshold]
     items = [data[idx] for idx in indices]
+    for idx in indices:
+        data[idx]["sim"]=sims[idx]
+        items.append(data[idx])
     return items
 
 
@@ -211,7 +214,7 @@ def get_svd_results(query_input):
             summary_to_webtoon[i["summary"]]=i["title"]
             
     results = get_svd(query_input, webtoons)
-    return results
+    return results[:10]
 
 
 def custom_search(query_input, likely_genres):
