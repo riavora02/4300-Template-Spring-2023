@@ -11,6 +11,7 @@ defineProps<WebtoonType>()
       <h4>{{ genre }}</h4>
     </div>
     <div class="p-6 text-slate-800">
+      <img :src="thumbnail" />
       <p>{{ summary }}</p>
     </div>
   </div>

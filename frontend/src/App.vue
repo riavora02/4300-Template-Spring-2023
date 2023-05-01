@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import axios from "axios"
-import Webtoon from "./components/Webtoon.vue"
 import WebtoonList from "./components/WebtoonList.vue"
 import LoadingSpinner from "./components/LoadingSpinner.vue"
 import { WebtoonType } from "./types"
@@ -50,7 +49,7 @@ onMounted(() => {
   <div class="container mx-auto px-6 py-20 font-lato">
     <div class="flex flex-col space-y-12">
       <h1
-        class="text-center text-6xl mb-0 font-semibold font-display text-slate-700 font-lexend"
+        class="text-center text-6xl mb-0 font-semibold font-display font-lexend"
       >
         Webtoon Finder
       </h1>
@@ -79,10 +78,18 @@ onMounted(() => {
             <input
               type="text"
               v-model="searchText"
+              placeholder="What kind of Webtoon do you want...?"
+              class="input input-bordered rounded-full input-accent w-full pl-10 p-2.5"
+              required
+            />
+
+            <!-- <input
+              type="text"
+              v-model="searchText"
               class="text-lg bg-gray-50 border border-gray-300 text-gray-900 rounded-full focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5"
               placeholder="Search for a Webtoon..."
               required
-            />
+            /> -->
           </div>
           <div>
             <select
