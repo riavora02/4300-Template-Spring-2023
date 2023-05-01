@@ -3,6 +3,8 @@ import numpy as np
 import re
 from nltk.tokenize import TreebankWordTokenizer
 from sklearn.feature_extraction.text import CountVectorizer
+import os.path
+import pickle
 
 def tokenize(text):
     return [x for x in re.findall(r"[a-z]+", text.lower())]
@@ -20,7 +22,7 @@ def preprocess(query, n=3):
      webtoon_num_to_genre = {}
      count = 0
 
-     for webtoon in webtoons: 
+     for webtoon in webtoons:      
 
           if webtoon['genre'] not in genre_mappings: 
                genre_mappings[webtoon['genre']] = len(genre_mappings)
@@ -52,16 +54,21 @@ def preprocess(query, n=3):
 
      total_counts = np.sum(vectors, axis = 0)
 
-     # label_word_prob gives probability of word occuring given genre P(X | Y)
-     label_word_prob = np.zeros((len(genre_mappings), len(vectors[0])))
+     if not os.path.exists('prob.txt'):
+          # label_word_prob gives probability of word occuring given genre P(X | Y)
+          label_word_prob = np.zeros((len(genre_mappings), len(vectors[0])))
 
-     #Now we loop through each of the labels in the corpus and for each of the genres we find the label_word_prob
-     for i in range(len(genre_mappings)):
-          for word_num in range(len(vectors[0])):
-               sum = 0 
-               for row in range(len(vectors)):
-                    sum += vectors[row][word_num] if webtoon_num_to_genre[row] == i else 0
-               label_word_prob[i][word_num] = sum / total_counts[word_num]
+          #Now we loop through each of the labels in the corpus and for each of the genres we find the label_word_prob
+          for i in range(len(genre_mappings)):
+               for word_num in range(len(vectors[0])):
+                    sum = 0 
+                    for row in range(len(vectors)):
+                         sum += vectors[row][word_num] if webtoon_num_to_genre[row] == i else 0
+                    label_word_prob[i][word_num] = sum / total_counts[word_num]
+          
+          pickle.dump(label_word_prob, open("prob.txt", 'wb'))
+          
+     label_word_prob = pickle.load(open("prob.txt", 'rb'))
 
      # Now given a query we can iterate through all the genres and see which genre it is most likely to be present in
      query = query.split()
