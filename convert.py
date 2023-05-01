@@ -22,5 +22,5 @@ if __name__ == "__main__":
     data = pd.read_csv("webtoons.csv")
     data["view"] = data["view"].apply(value_to_int)
     data["subscribe"] = data["subscribe"].apply(value_to_int)
-    data["released_date"] = pd.to_datetime(data["released_date"])
+    data["likes"] = data["likes"].apply(value_to_int)
     data.to_csv("webtoons2.csv", index=False)

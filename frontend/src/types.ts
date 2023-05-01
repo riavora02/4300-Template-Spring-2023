@@ -10,6 +10,16 @@ export interface WebtoonType {
   genre: string
   thumbnail: string
   webtoon_id: number
+  created_by: string
+  view: number
+  subscribe: number
+  grade: number
+  released_date: string
+  url: string
+  cover: string
+  likes: number
+  sim: number
+  social: number
 }
 
 export interface WebtoonListProps {

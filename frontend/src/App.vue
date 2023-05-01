@@ -2,6 +2,7 @@
 import axios from "axios"
 import WebtoonList from "./components/WebtoonList.vue"
 import LoadingSpinner from "./components/LoadingSpinner.vue"
+import SplashView from "./components/SplashView.vue"
 import { WebtoonType } from "./types"
 import { onMounted, ref } from "vue"
 
@@ -11,12 +12,16 @@ const webtoons = ref<WebtoonType[]>([])
 const genres = ref<string[]>([])
 const searchText = ref("")
 const genreFilter = ref("all")
+const nichenessValue = ref(50)
 const loadingResults = ref(false)
+const activeTab = ref(0)
 
 const additionalWebtoons = ref<WebtoonType[]>([])
 
 const searchQuery = async () => {
-  const request = `${BACKEND_URL}/webtoons?q=${searchText.value}&genre=${genreFilter.value}`
+  const request = `${BACKEND_URL}/webtoons?q=${searchText.value}&genre=${
+    genreFilter.value
+  }&num=${100 - nichenessValue.value}`
   loadingResults.value = true
   axios
     .get(request)
@@ -25,6 +30,13 @@ const searchQuery = async () => {
       if (res.data["all"]) {
         additionalWebtoons.value = res.data["all"]
       }
+
+      if (genreFilter.value == "all") {
+        activeTab.value = 0
+      } else {
+        activeTab.value = 1
+      }
+
       loadingResults.value = false
     })
     .catch((err) => {
@@ -46,8 +58,9 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="container mx-auto px-6 py-20 font-lato">
-    <div class="flex flex-col space-y-12">
+  <SplashView />
+  <div class="container mx-auto min-h-screen px-6 py-20 font-lato">
+    <div class="flex flex-col space-y-8">
       <h1
         class="text-center text-6xl mb-0 font-semibold font-display font-lexend"
       >
@@ -95,13 +108,22 @@ onMounted(() => {
             <select
               v-model="genreFilter"
               id="genre"
-              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+              class="select select-bordered w-full p-2.5"
             >
               <option value="all" selected>All genres</option>
-              <option v-for="genre in genres" :value="genre">
+              <option v-for="genre in genres" :value="genre" :key="genre">
                 {{ genre }}
               </option>
             </select>
+          </div>
+          <div>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              v-model="nichenessValue"
+              class="range range-accent"
+            />
           </div>
           <button
             type="submit"
@@ -128,15 +150,35 @@ onMounted(() => {
 
       <div>
         <div v-if="!loadingResults">
-          <WebtoonList
-            class="mb-20"
-            :webtoons="webtoons"
-            title="Recommended Webtoons based on query similarity"
-          />
-          <WebtoonList
-            :webtoons="additionalWebtoons"
-            title="Additional Webtoons based on input filter"
-          />
+          <div v-show="webtoons.length > 0">
+            <div class="tabs mb-5">
+              <a
+                href="#"
+                class="tab tab-bordered"
+                :class="{ 'tab-active': activeTab == 0 }"
+                @click.prevent="activeTab = 0"
+                >Top Recommended</a
+              >
+              <a
+                href="#"
+                class="tab tab-bordered"
+                :class="{ 'tab-active': activeTab == 1 }"
+                @click.prevent="activeTab = 1"
+                >Recommended by Genre Filter</a
+              >
+            </div>
+            <WebtoonList
+              class="mb-20"
+              :webtoons="webtoons"
+              title="Recommended Webtoons based on query similarity"
+              v-show="activeTab == 0"
+            />
+            <WebtoonList
+              :webtoons="additionalWebtoons"
+              title="Additional Webtoons based on input filter"
+              v-show="activeTab == 1"
+            />
+          </div>
         </div>
         <div class="flex justify-center" v-else>
           <LoadingSpinner />
