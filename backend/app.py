@@ -184,9 +184,9 @@ def get_svd(query, data, sim_threshold=0.35):
     sims = cosine_similarity(query_vec, docs).flatten()
     indices = np.argsort(sims)[::-1]
     indices = [idx for idx in indices if sims[idx] >= sim_threshold]
-    items = [data[idx] for idx in indices]
+    items = []
     for idx in indices:
-        data[idx]["sim"]=sims[idx]
+        data[idx]["sim"] = sims[idx]
         items.append(data[idx])
     return items
 
@@ -206,21 +206,36 @@ def get_svd(query, data, sim_threshold=0.35):
 #     return success_response({"webtoons": output[:10]})
 
 
-def get_svd_results(query_input):
-    webtoons = [webtoon.simple_serialize() for webtoon in Webtoon.query.all()]
+def get_svd_results(query_input, desired_percentile):
+    webtoons = [webtoon.likes_serialize() for webtoon in Webtoon.query.all()]
     summary_to_webtoon = {}
     for i in webtoons:
         if i["summary"] not in summary_to_webtoon:
             summary_to_webtoon[i["summary"]]=i["title"]
-            
-    results = get_svd(query_input, webtoons)
-    return results[:10]
+    
+    results = sorted(get_svd(query_input, webtoons), key=lambda webtoon: webtoon["social"])
+    return calculate_percentile(results, desired_percentile)
 
 
-def custom_search(query_input, likely_genres):
-    output = get_svd_results(query_input)
+def custom_search(query_input, likely_genres, desired_percentile):
+    output = get_svd_results(query_input, desired_percentile)
     output = [w for w in output if w["genre"] in likely_genres]
-    return output
+    return output[:10]
+
+
+def calculate_percentile(webtoon_dict, desired_percentile):
+    """
+    This function assumes webtoon_dict is sorted
+    """
+    #adds the percentile to every webtoon
+    for i in range(len(webtoon_dict)):
+        num_below = webtoon_dict[i+1:]
+        percentile = (len(num_below) / len(webtoon_dict))*100
+        webtoon_dict[i]["percentile"] = percentile  
+    # print(webtoon_dict) 
+    #returns the list in the right order 
+    webtoon_dict.sort(key = lambda wtoon: abs(wtoon["percentile"] - desired_percentile))
+    return webtoon_dict
 
 
 @app.route("/")
@@ -232,14 +247,16 @@ def home():
 def webtoon_search():
     query_input = request.args.get("q")
     user_genre = request.args.get("genre")
+    filter_num = int(request.args.get("num") if request.args.get("num") else 100)
     likely_genres = preprocess(query_input)
     if query_input:
         if user_genre == "all":
-            return success_response({"all": get_svd_results(query_input), "webtoons": custom_search(query_input, likely_genres)})
+            return success_response({"all": get_svd_results(query_input, filter_num), "webtoons": custom_search(query_input, likely_genres, filter_num)})
         else:
-            return success_response({"all": custom_search(query_input, [user_genre]), "webtoons": custom_search(query_input, likely_genres)})
+            return success_response({"all": custom_search(query_input, [user_genre], filter_num), "webtoons": custom_search(query_input, likely_genres, filter_num)})
     else:
-        return success_response({"webtoons": [webtoon.simple_serialize() for webtoon in Webtoon.query.all()]})
+        output = sorted([webtoon.likes_serialize() for webtoon in Webtoon.query.all()], key=lambda webtoon: webtoon["social"])
+        return success_response({"webtoons": calculate_percentile(output, filter_num)})
     
     
 @app.route("/genres")
