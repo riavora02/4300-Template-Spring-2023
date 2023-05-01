@@ -137,6 +137,20 @@ class Webtoon(db.Model):
             "thumbnail": self.thumbnail,
             "summary": self.summary
         }
+    
+    def likes_serialize(self):
+        """
+        Serializes a webtoon with a weighted average between likes value and views value for sorting purposes
+        """
+        return {
+            "id": self.id,
+            "webtoon_id": self.webtoon_id,
+            "title": self.title,
+            "genre": self.genre,
+            "thumbnail": self.thumbnail,
+            "summary": self.summary,
+            "social": self.likes / self.view
+        }
 
 
 
