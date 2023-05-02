@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import axios from "axios"
-import Webtoon from "./components/Webtoon.vue"
+import WebtoonList from "./components/WebtoonList.vue"
 import LoadingSpinner from "./components/LoadingSpinner.vue"
+import InputDisplay from "./components/InputDisplay.vue"
+
 import { WebtoonType } from "./types"
 import { onMounted, ref } from "vue"
 
@@ -11,23 +13,48 @@ const webtoons = ref<WebtoonType[]>([])
 const genres = ref<string[]>([])
 const searchText = ref("")
 const genreFilter = ref("all")
+const nichenessValue = ref(50)
 const loadingResults = ref(false)
+const activeTab = ref(0)
+const nothingText = ref("")
+const searched = ref(false)
 
 const additionalWebtoons = ref<WebtoonType[]>([])
 
+const elem = ref<null | HTMLDivElement>(null)
+const top = ref<null | HTMLDivElement>(null)
+
+const scrollToTop = () => {
+  top.value?.scrollIntoView({ behavior: "smooth" })
+}
+
 const searchQuery = async () => {
-  const request = `${BACKEND_URL}/webtoons?q=${searchText.value}&genre=${genreFilter.value}`
+  searched.value = true
+  elem.value?.scrollIntoView({ behavior: "smooth" })
+
+  const request = `${BACKEND_URL}/webtoons?q=${searchText.value}&genre=${
+    genreFilter.value
+  }&num=${100 - nichenessValue.value}`
   loadingResults.value = true
   axios
     .get(request)
     .then((res) => {
       webtoons.value = res.data["webtoons"]
-
       if (res.data["all"]) {
         additionalWebtoons.value = res.data["all"]
-        console.log(res.data)
       }
-      console.log(webtoons.value)
+
+      if (genreFilter.value == "all") {
+        activeTab.value = 0
+      } else {
+        activeTab.value = 1
+      }
+
+      if (webtoons.value.length == 0 && webtoons.value.length == 0) {
+        nothingText.value =
+          "No webtoons found for this search! Please try a different search."
+      }
+
       loadingResults.value = false
     })
     .catch((err) => {
@@ -37,114 +64,158 @@ const searchQuery = async () => {
 
 onMounted(() => {
   const request = `${BACKEND_URL}/genres`
-  axios.get(request).then((res) => {
-    genres.value = res.data["genres"]
-  }).catch((err) => {
-    console.log(err)
-  })
+  axios
+    .get(request)
+    .then((res) => {
+      genres.value = res.data["genres"]
+    })
+    .catch((err) => {
+      console.log(err)
+    })
 })
-
 </script>
 
 <template>
-  <div class="container mx-auto px-6 py-20 font-lato">
-    <div class="flex flex-col space-y-12">
-      <h1
-        class="text-center text-6xl mb-0 font-semibold font-display text-slate-700 font-lexend"
+  <button
+    class="btn btn-circle btn-accent fixed z-10 bottom-10 right-10 text-white"
+    @click="scrollToTop"
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke-width="1.5"
+      stroke="currentColor"
+      class="w-6 h-6"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        d="M12 19.5v-15m0 0l-6.75 6.75M12 4.5l6.75 6.75"
+      />
+    </svg>
+  </button>
+  <div
+    ref="top"
+    class="hero min-h-screen max-h-screen bg-[url('./assets/dots.png')] relative"
+  >
+    <div
+      class="bg-[url('./assets/big-speech-bubble.svg')] absolute top-0 left-0 w-2/3 h-2/3 bg-contain bg-no-repeat bg-center flex justify-center place-items-center"
+    ></div>
+    <div
+      class="bg-[url('./assets/small-speech-bubble.svg')] absolute w-2/3 h-1/2 bottom-0 right-0 bg-contain bg-center bg-no-repeat flex justify-center place-items-center"
+    >
+      <form
+        class="flex flex-col gap-5 relative top-[-2em] w-2/3"
+        @submit.prevent="searchQuery"
       >
-        Webtoon Finder
-      </h1>
-
-      <div class="md:mx-52">
-        <form class="flex items-center" @submit.prevent="searchQuery">
-          <label for="simple-search" class="sr-only">Search</label>
-          <div class="relative w-full">
-            <div
-              class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none"
+        <label for="simple-search" class="sr-only">Search</label>
+        <input
+          type="text"
+          placeholder="What kind of Webtoon would you like to read?"
+          class="input input-bordered"
+          v-model="searchText"
+        />
+        <div class="grid grid-flow-col gap-5 justify-stretch items-center">
+          <div class="basis-10">
+            <select
+              v-model="genreFilter"
+              id="genre"
+              class="select select-bordered p-2.5 w-full"
             >
-              <svg
-                aria-hidden="true"
-                class="w-5 h-5 text-gray-500 dark:text-gray-400"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fill-rule="evenodd"
-                  d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                  clip-rule="evenodd"
-                ></path>
-              </svg>
-            </div>
+              <option value="all" selected>All genres</option>
+              <option v-for="genre in genres" :value="genre" :key="genre">
+                {{ genre }}
+              </option>
+            </select>
+          </div>
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Nicheness</span>
+            </label>
             <input
-              type="text"
-              v-model="searchText"
-              class="text-lg bg-gray-50 border border-gray-300 text-gray-900 rounded-full focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5"
-              placeholder="Search for a Webtoon..."
-              required
+              type="range"
+              min="0"
+              max="100"
+              v-model="nichenessValue"
+              class="range range-accent"
             />
           </div>
           <div>
-            <select v-model="genreFilter" id="genre" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-              <option value="all" selected>All genres</option>
-              <option v-for="genre in genres" :value="genre">{{ genre }}</option>
-            </select>
-          </div>
-          <button
-            type="submit"
-            class="p-2.5 ml-2 text-lg font-medium text-white bg-green-700 rounded-lg border border-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300"
-          >
-            <svg
-              class="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
+            <button
+              type="submit"
+              class="btn text-lg btn-accent font-medium text-white"
             >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              ></path>
-            </svg>
-            <span class="sr-only">Search</span>
-          </button>
-        </form>
-      </div>
+              <svg
+                class="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                ></path>
+              </svg>
+              <span class="sr-only">Search</span>
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div ref="elem" class="container mx-auto min-h-screen px-6 py-10 font-body">
+    <p v-show="!searched">Search for a webtoon above!</p>
+    <div class="flex flex-col space-y-8">
+      <InputDisplay
+        :query="searchText"
+        :genre="genreFilter"
+        :nicheness="nichenessValue"
+        v-show="webtoons.length > 0 || nothingText"
+      />
 
       <div>
         <div v-if="!loadingResults">
-          <h4 class="text-xl" v-if="webtoons.length > 0">Recommended Webtoons</h4>
-          <div class="mt-10 grid grid-cols-3 gap-8">
-            <Webtoon
-              v-for="webtoon in webtoons"
-              :id="webtoon.id"
-              :title="webtoon.title"
-              :summary="webtoon.summary"
-              :webtoon_id="webtoon.id" 
-              :thumbnail="webtoon.thumbnail" 
-              :genre="webtoon.genre"
-              class="mb-6" 
+          <div v-if="webtoons.length > 0">
+            <div class="tabs mb-5">
+              <a
+                href="#"
+                class="tab tab-bordered"
+                :class="{ 'tab-active': activeTab == 0 }"
+                @click.prevent="activeTab = 0"
+                >Top Recommended</a
+              >
+              <a
+                href="#"
+                class="tab tab-bordered"
+                :class="{ 'tab-active': activeTab == 1 }"
+                @click.prevent="activeTab = 1"
+                >Recommended by Genre Filter</a
+              >
+            </div>
+            <WebtoonList
+              class="mb-20"
+              :webtoons="webtoons"
+              title="Recommended Webtoons based on query similarity"
+              v-show="activeTab == 0"
+            />
+            <WebtoonList
+              :webtoons="additionalWebtoons"
+              title="Recommended Webtoons based on input genre filter"
+              v-show="activeTab == 1"
             />
           </div>
-          <div class="mt-20" v-if="additionalWebtoons.length > 0">
-            <h4 class="text-xl">Webtoons based on filter</h4>
-            <div class="mt-10 grid grid-cols-3 gap-8">
-              <Webtoon
-                v-for="webtoon in additionalWebtoons"
-                :id="webtoon.id"
-                :title="webtoon.title"
-                :summary="webtoon.summary"
-                :webtoon_id="webtoon.id" 
-                :thumbnail="webtoon.thumbnail" 
-                :genre="webtoon.genre"
-                class="mb-6" 
-              />
-            </div>
+          <div v-else>
+            {{ nothingText }}
           </div>
         </div>
-        <LoadingSpinner v-else/>
+        <div class="flex justify-center" v-else>
+          <LoadingSpinner />
+        </div>
       </div>
     </div>
   </div>

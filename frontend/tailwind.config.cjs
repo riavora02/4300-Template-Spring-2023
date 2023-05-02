@@ -4,10 +4,10 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        lato: ["Lato", "sans-serif"],
-        lexend: ["Lexend", "sans-serif"],
+        body: ["'Sawarabi Gothic'", "sans-serif"],
+        display: ["'Varela Round'", "sans-serif"],
       },
     },
   },
-  plugins: [],
+  plugins: [require("daisyui")],
 }

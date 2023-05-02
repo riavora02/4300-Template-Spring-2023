@@ -110,7 +110,7 @@ class Webtoon(db.Model):
             "thumbnail": self.thumbnail,
             "summary": self.summary, 
             "episodes": self.episodes, 
-            "created_by": self.create_by, 
+            "created_by": self.created_by, 
             "view": self.view, 
             "subscribe": self.subscribe, 
             "grade": self.grade,
@@ -149,7 +149,15 @@ class Webtoon(db.Model):
             "genre": self.genre,
             "thumbnail": self.thumbnail,
             "summary": self.summary,
-            "social": self.likes 
+            "created_by": self.created_by, 
+            "view": self.view, 
+            "subscribe": self.subscribe, 
+            "grade": self.grade,
+            "released_date": self.released_date.strftime("%B %d, %Y"),
+            "url": self.url, 
+            "cover": self.cover, 
+            "likes": self.likes,
+            "social": self.view
         }
 
 

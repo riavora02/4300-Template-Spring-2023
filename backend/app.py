@@ -240,7 +240,7 @@ def calculate_percentile(webtoon_dict, desired_percentile):
 
 @app.route("/")
 def home():
-    return render_template('index.html')
+    return "<p>Hello, you are on the backend. See the frontend <a href='http://4300showcase.infosci.cornell.edu:4548/'>here.</a></p>"
 
 
 @app.route("/webtoons")
