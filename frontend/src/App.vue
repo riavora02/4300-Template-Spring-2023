@@ -50,7 +50,7 @@ const searchQuery = async () => {
         activeTab.value = 1
       }
 
-      if (webtoons.value.length == 0 && webtoons.value.length == 0) {
+      if (webtoons.value.length == 0 && additionalWebtoons.value.length == 0) {
         nothingText.value =
           "No webtoons found for this search! Please try a different search."
       }
@@ -175,12 +175,14 @@ onMounted(() => {
         :query="searchText"
         :genre="genreFilter"
         :nicheness="nichenessValue"
-        v-show="webtoons.length > 0 || nothingText"
+        v-show="
+          webtoons.length > 0 || additionalWebtoons.length > 0 || nothingText
+        "
       />
 
       <div>
         <div v-if="!loadingResults">
-          <div v-if="webtoons.length > 0">
+          <div v-if="webtoons.length > 0 || additionalWebtoons.length > 0">
             <div class="tabs mb-5">
               <a
                 href="#"
