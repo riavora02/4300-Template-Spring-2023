@@ -21,6 +21,11 @@ const nothingText = ref("")
 const additionalWebtoons = ref<WebtoonType[]>([])
 
 const elem = ref<null | HTMLDivElement>(null)
+const top = ref<null | HTMLDivElement>(null)
+
+const scrollToTop = () => {
+  top.value?.scrollIntoView({ behavior: "smooth" })
+}
 
 const searchQuery = async () => {
   elem.value?.scrollIntoView({ behavior: "smooth" })
@@ -69,7 +74,27 @@ onMounted(() => {
 </script>
 
 <template>
+  <button
+    class="btn btn-circle btn-accent fixed z-10 bottom-10 right-10 text-white"
+    @click="scrollToTop"
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke-width="1.5"
+      stroke="currentColor"
+      class="w-6 h-6"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        d="M12 19.5v-15m0 0l-6.75 6.75M12 4.5l6.75 6.75"
+      />
+    </svg>
+  </button>
   <div
+    ref="top"
     class="hero min-h-screen max-h-screen bg-[url('./assets/dots.png')] relative"
   >
     <div
