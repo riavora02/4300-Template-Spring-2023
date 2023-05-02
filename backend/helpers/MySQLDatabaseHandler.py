@@ -149,7 +149,7 @@ class Webtoon(db.Model):
             "genre": self.genre,
             "thumbnail": self.thumbnail,
             "summary": self.summary,
-            "social": self.likes / self.view
+            "social": self.likes 
         }
 
 
