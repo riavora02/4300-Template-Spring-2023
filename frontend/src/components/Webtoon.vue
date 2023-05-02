@@ -36,10 +36,15 @@ function formatCompactNumber(n: number) {
         </div>
         <div class="grow">
           <div class="chat chat-start">
-            <div class="chat-bubble">{{ webtoon.genre }}</div>
+            <div class="chat-bubble">
+              {{ webtoon.genre }}
+            </div>
           </div>
         </div>
-        <span class="font-semibold" v-html="simToRecommend(webtoon.sim)" />
+        <span
+          class="font-semibold truncate"
+          v-html="simToRecommend(webtoon.sim)"
+        />
       </div>
       <div class="flex gap-4">
         <div class="flex gap-1">

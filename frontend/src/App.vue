@@ -5,7 +5,7 @@ import LoadingSpinner from "./components/LoadingSpinner.vue"
 import InputDisplay from "./components/InputDisplay.vue"
 
 import { WebtoonType } from "./types"
-import { onMounted, ref } from "vue"
+import { onMounted, ref, watch } from "vue"
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
 
@@ -19,6 +19,10 @@ const activeTab = ref(0)
 const nothingText = ref("")
 const searched = ref(false)
 
+const queryDisplay = ref("")
+const genreDisplay = ref("")
+const nichenessDisplay = ref(50)
+
 const additionalWebtoons = ref<WebtoonType[]>([])
 
 const elem = ref<null | HTMLDivElement>(null)
@@ -29,6 +33,10 @@ const scrollToTop = () => {
 }
 
 const searchQuery = async () => {
+  queryDisplay.value = searchText.value
+  genreDisplay.value = genreFilter.value
+  nichenessDisplay.value = nichenessValue.value
+
   searched.value = true
   elem.value?.scrollIntoView({ behavior: "smooth" })
 
@@ -77,7 +85,7 @@ onMounted(() => {
 
 <template>
   <button
-    class="btn btn-circle btn-accent fixed z-10 bottom-10 right-10 text-white"
+    class="btn btn-circle btn-success fixed z-10 bottom-10 right-10 text-white"
     @click="scrollToTop"
   >
     <svg
@@ -138,13 +146,13 @@ onMounted(() => {
               min="0"
               max="100"
               v-model="nichenessValue"
-              class="range range-accent"
+              class="range"
             />
           </div>
           <div>
             <button
               type="submit"
-              class="btn text-lg btn-accent font-medium text-white"
+              class="btn text-lg btn-success font-medium text-white"
             >
               <svg
                 class="w-6 h-6"
@@ -169,12 +177,14 @@ onMounted(() => {
   </div>
 
   <div ref="elem" class="container mx-auto min-h-screen px-6 py-10 font-body">
-    <p v-show="!searched">Search for a webtoon above!</p>
+    <h3 class="text-6xl font-display text-center mt-10" v-show="!searched">
+      Search for a webtoon above!
+    </h3>
     <div class="flex flex-col space-y-8">
       <InputDisplay
-        :query="searchText"
-        :genre="genreFilter"
-        :nicheness="nichenessValue"
+        :query="queryDisplay"
+        :genre="genreDisplay"
+        :nicheness="nichenessDisplay"
         v-show="
           webtoons.length > 0 || additionalWebtoons.length > 0 || nothingText
         "
