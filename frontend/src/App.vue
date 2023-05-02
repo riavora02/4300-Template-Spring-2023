@@ -17,6 +17,7 @@ const nichenessValue = ref(50)
 const loadingResults = ref(false)
 const activeTab = ref(0)
 const nothingText = ref("")
+const searched = ref(false)
 
 const additionalWebtoons = ref<WebtoonType[]>([])
 
@@ -28,6 +29,7 @@ const scrollToTop = () => {
 }
 
 const searchQuery = async () => {
+  searched.value = true
   elem.value?.scrollIntoView({ behavior: "smooth" })
 
   const request = `${BACKEND_URL}/webtoons?q=${searchText.value}&genre=${
@@ -167,12 +169,13 @@ onMounted(() => {
   </div>
 
   <div ref="elem" class="container mx-auto min-h-screen px-6 py-10 font-body">
+    <p v-show="!searched">Search for a webtoon above!</p>
     <div class="flex flex-col space-y-8">
       <InputDisplay
         :query="searchText"
         :genre="genreFilter"
         :nicheness="nichenessValue"
-        v-if="webtoons.length > 0 || nothingText"
+        v-show="webtoons.length > 0 || nothingText"
       />
 
       <div>
