@@ -26,3 +26,9 @@ export interface WebtoonListProps {
   title: string
   webtoons: WebtoonType[]
 }
+
+export interface InputDisplayProps {
+  query: string
+  genre: string
+  nicheness: number
+}

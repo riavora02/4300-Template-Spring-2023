@@ -7,7 +7,10 @@ defineProps<WebtoonListProps>()
 
 <template>
   <div>
-    <h4 class="text-2xl" v-if="webtoons.length > 0">{{ title }}</h4>
+    <h4 class="text-2xl font-display">{{ title }}</h4>
+    <p class="mt-10" v-if="webtoons.length == 0">
+      No webtoons found for this category.
+    </p>
     <div class="mt-10 grid grid-flow-row auto-rows-max gap-10">
       <div
         class="indicator w-full"
@@ -29,7 +32,7 @@ defineProps<WebtoonListProps>()
             >{{ index + 1 }}</span
           >
         </span>
-        <div class="flex border border-gray-200 shadow-lg rounded-xl">
+        <div class="flex border border-gray-200 shadow-lg rounded-xl w-full">
           <div class="flex-none w-72 relative rounded-l-xl" v-show="index != 1">
             <img
               src="../assets/num1.png"
@@ -70,13 +73,7 @@ defineProps<WebtoonListProps>()
         class="indicator w-full"
         v-for="(webtoon, index) in webtoons.slice(3)"
       >
-        <span
-          class="indicator-item"
-          :class="{
-            'indicator-start': index % 2 == 0,
-            'indicator-bottom': index % 2 == 1,
-          }"
-        >
+        <span class="indicator-item indicator-start">
           <span
             class="w-12 h-12 text-xl rounded-full bg-slate-500 grid place-items-center text-white"
             >{{ index + 4 }}</span
@@ -84,7 +81,7 @@ defineProps<WebtoonListProps>()
         </span>
         <Webtoon
           :webtoon="webtoon"
-          class="card border border-gray-200 shadow-lg rounded-xl"
+          class="card border border-gray-200 shadow-lg rounded-xl w-full"
         />
       </div>
     </div>
