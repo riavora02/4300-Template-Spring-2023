@@ -157,7 +157,7 @@ class Webtoon(db.Model):
             "url": self.url, 
             "cover": self.cover, 
             "likes": self.likes,
-            "social": self.likes / self.view
+            "social": self.views 
         }
 
 
