@@ -15,6 +15,7 @@ const genreFilter = ref("all")
 const nichenessValue = ref(50)
 const loadingResults = ref(false)
 const activeTab = ref(0)
+const nothingText = ref("")
 
 const additionalWebtoons = ref<WebtoonType[]>([])
 
@@ -35,6 +36,11 @@ const searchQuery = async () => {
         activeTab.value = 0
       } else {
         activeTab.value = 1
+      }
+
+      if (webtoons.value.length == 0 && webtoons.value.length == 0) {
+        nothingText.value =
+          "No webtoons found for this search! Please try a different search."
       }
 
       loadingResults.value = false
@@ -150,7 +156,7 @@ onMounted(() => {
 
       <div>
         <div v-if="!loadingResults">
-          <div v-show="webtoons.length > 0">
+          <div v-if="webtoons.length > 0">
             <div class="tabs mb-5">
               <a
                 href="#"
@@ -175,9 +181,12 @@ onMounted(() => {
             />
             <WebtoonList
               :webtoons="additionalWebtoons"
-              title="Additional Webtoons based on input filter"
+              title="Recommended Webtoons based on input genre filter"
               v-show="activeTab == 1"
             />
+          </div>
+          <div v-else>
+            {{ nothingText }}
           </div>
         </div>
         <div class="flex justify-center" v-else>
