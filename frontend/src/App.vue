@@ -40,9 +40,7 @@ const searchQuery = async () => {
   searched.value = true
   elem.value?.scrollIntoView({ behavior: "smooth" })
 
-  const request = `${BACKEND_URL}/webtoons?q=${searchText.value}&genre=${
-    genreFilter.value
-  }&num=${100 - nichenessValue.value}`
+  const request = `${BACKEND_URL}/webtoons?q=${searchText.value}&genre=${genreFilter.value}&num=${nichenessValue.value}`
   loadingResults.value = true
   axios
     .get(request)
